@@ -27,10 +27,10 @@ jobs:
     - name: Generate the artifacts
       uses: skx/github-action-build@master
       with:
-        builder: /home/runner/work/node-dive/node-dive/Makefile
+        builder: ./Makefile
 
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
         name: node-dive
-        path: /home/runner/work/node-dive/node-dive/bin/
+        path: ./bin/
