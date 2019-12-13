@@ -6,8 +6,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/caiobegotti/nodes-dive/pkg/logger"
-	"github.com/caiobegotti/nodes-dive/pkg/plugin"
+	"github.com/caiobegotti/node-dive/pkg/logger"
+	"github.com/caiobegotti/node-dive/pkg/plugin"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -21,7 +21,7 @@ var (
 
 func RootCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:           "nodes-dive",
+		Use:           "node-dive",
 		Short:         "",
 		Long:          `.`,
 		SilenceErrors: true,

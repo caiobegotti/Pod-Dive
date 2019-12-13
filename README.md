@@ -1,4 +1,4 @@
-# nodes-dive
+# node-dive
 
 ![dive into kubernetes nodes workloads](logo-256.png)
 
@@ -9,7 +9,7 @@ Icon art made by [Smashicons](https://www.flaticon.com/authors/smashicons) from 
 ## Quick Start
 
 ```
-kubectl krew install nodes-dive
-kubectl nodes-dive
+kubectl krew install node-dive
+kubectl node-dive
 ```
 

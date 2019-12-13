@@ -1,7 +1,7 @@
 apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
-  name: nodes-dive
+  name: node-dive
 spec:
   version: "v0.1.0"
   platforms:
@@ -9,41 +9,41 @@ spec:
       matchLabels:
         os: linux
         arch: amd64
-    uri: https://github.com/caiobegotti/nodes-dive/releases/download/v0.1.0/nodes-dive_linux_amd64.tar.gz
+    uri: https://github.com/caiobegotti/node-dive/releases/download/v0.1.0/node-dive_linux_amd64.tar.gz
     sha256: ""
     files:
-    - from: "./nodes-dive"
+    - from: "./node-dive"
       to: "."
-    bin: "nodes-dive"
+    bin: "node-dive"
   - selector:
       matchLabels:
         os: darwin
         arch: amd64
-    uri: https://github.com/caiobegotti/nodes-dive/releases/download/v0.1.0/nodes-dive_darwin_amd64.tar.gz
+    uri: https://github.com/caiobegotti/node-dive/releases/download/v0.1.0/node-dive_darwin_amd64.tar.gz
     sha256: ""
     files:
-    - from: "./nodes-dive"
+    - from: "./node-dive"
       to: "."
-    bin: "nodes-dive"
+    bin: "node-dive"
   - selector:
       matchLabels:
         os: windows
         arch: amd64
-    uri: https://github.com/caiobegotti/nodes-dive/releases/download/v0.1.0/nodes-dive_windows_amd64.zip
+    uri: https://github.com/caiobegotti/node-dive/releases/download/v0.1.0/node-dive_windows_amd64.zip
     sha256: ""
     files:
-    - from: "/nodes-dive.exe"
+    - from: "/node-dive.exe"
       to: "."
-    bin: "nodes-dive.exe"
-  shortDescription: A new plugin
-  homepage: https://github.com/caiobegotti/nodes-dive
+    bin: "node-dive.exe"
+  shortDescription: A kubectl Krew plugin to dive into your Kubernetes nodes workloads
+  homepage: https://github.com/caiobegotti/node-dive
   caveats: |
     Usage:
-      $ kubectl nodes-dive
+      $ kubectl node-dive
 
     For additional options:
-      $ kubectl nodes-dive --help
-      or https://github.com/caiobegotti/nodes-dive/blob/v0.1.0/doc/USAGE.md
+      $ kubectl node-dive --help
+      or https://github.com/caiobegotti/node-dive/blob/v0.1.0/doc/USAGE.md
 
   description: |
-    This is a new plugin
+    A kubectl Krew plugin to dive into your Kubernetes nodes workloads

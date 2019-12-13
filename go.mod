@@ -1,4 +1,4 @@
-module github.com/caiobegotti/nodes-dive
+module github.com/caiobegotti/node-dive
 
 go 1.12
 
