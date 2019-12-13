@@ -1,5 +1,5 @@
 #!/bin/sh
 
-cd .. && make || exit 1
+make -f ../Makefile || exit 1
 
 exit 0
