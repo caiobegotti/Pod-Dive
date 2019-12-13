@@ -24,5 +24,12 @@ jobs:
             dep ensure
         fi
 
-    - name: github-action-build
-      uses: skx/github-action-build@release-0.6.1
+      - name: Generate the artifacts
+        uses: skx/github-action-build@master
+
+      - name: Upload the artifacts
+        uses: skx/github-action-publish-binaries@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: 'node-dive-*'
