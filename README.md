@@ -1,19 +1,6 @@
-# kubectl krew template repo
+# krew nodes-dive
 
-There's a lot of scaffolding needed to set up a good kubectl plugin. This repo is a GitHub Template Repo to make it easy to set all of this scaffolding up for a new repo.
-
-The assumptions made are:
-1. You'll write your plugin in go
-2. You want client-go to interact with the cluster
-3. You want all of the kubectl flags available to your plugin
-4. Your plugin's home will be a github.com repo
-5. Your plugin will work in Linux, MacOS and Windows
-
-## Create your repo
-
-[Start here](https://github.com/replicatedhq/krew-plugin-template/generate) to create a new repo based on this template. This is not a fork, it will make a copy of this repo into your own organization or GitHub account. 
-
-Click that, and create your own version of this repo. Clone it locally. The rest of the steps you will be performing on your local copy.
+Icon art made by [Smashicons](https://www.flaticon.com/authors/smashicons) from [Flaticon](https://www.flaticon.com/).
 
 ## Make it yours
 
