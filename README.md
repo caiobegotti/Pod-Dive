@@ -1,5 +1,7 @@
 # krew nodes-dive
 
+![dive into kubernetes nodes workloads](logo-256.png)
+
 Icon art made by [Smashicons](https://www.flaticon.com/authors/smashicons) from [Flaticon](https://www.flaticon.com/).
 
 ## Make it yours
