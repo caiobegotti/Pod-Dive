@@ -1,5 +1,6 @@
 
 export GO111MODULE=on
+export GOROOT=$(PWD)
 
 .PHONY: bin
 bin: fmt vet
