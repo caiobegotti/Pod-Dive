@@ -27,7 +27,7 @@ jobs:
     - name: Generate the artifacts
       uses: skx/github-action-build@master
       with:
-        builder: ./Makefile
+        builder: ./.github/build
 
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
