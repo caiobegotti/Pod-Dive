@@ -1,10 +1,10 @@
-project_name: {{ .PluginName }}
+project_name: krew-nodes-dive
 release:
   github:
-    owner: {{ .Owner }}
-    name: {{ .Repo }}
+    owner: caiobegotti
+    name: krew-nodes-dive
 builds:
-  - id: {{ .PluginName }}
+  - id: krew-nodes-dive
     goos:
     - linux
     - windows
@@ -17,12 +17,12 @@ builds:
       - GO111MODULE=on
     main: cmd/plugin/main.go
     ldflags: -s -w
-      -X github.com/{{ .Owner }}/{{ .Repo }}/pkg/version.version=
+      -X github.com/caiobegotti/krew-nodes-dive/pkg/version.version=
 archives:
-  - id: {{ .PluginName }}
+  - id: krew-nodes-dive
     builds:
-    - {{ .PluginName }}
-    name_template: {{ `"{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"` }}
+    - krew-nodes-dive
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
     format_overrides:
     - goos: windows
       format: zip
