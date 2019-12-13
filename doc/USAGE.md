@@ -3,19 +3,19 @@
 The following assumes you have the plugin installed via
 
 ```shell
-kubectl krew install krew-nodes-dive
+kubectl krew install nodes-dive
 ```
 
 ### Scan images in your current kubecontext
 
 ```shell
-kubectl krew-nodes-dive
+kubectl nodes-dive
 ```
 
 ### Scan images in another kubecontext
 
 ```shell
-kubectl krew-nodes-dive --context=context-name
+kubectl nodes-dive --context=context-name
 ```
 
 ## How it works

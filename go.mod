@@ -1,4 +1,4 @@
-module github.com/caiobegotti/krew-nodes-dive
+module github.com/caiobegotti/nodes-dive
 
 go 1.12
 

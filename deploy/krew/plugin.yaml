@@ -1,7 +1,7 @@
 apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
-  name: krew-nodes-dive
+  name: nodes-dive
 spec:
   version: "v0.1.0"
   platforms:
@@ -9,41 +9,41 @@ spec:
       matchLabels:
         os: linux
         arch: amd64
-    uri: https://github.com/caiobegotti/krew-nodes-dive/releases/download/v0.1.0/krew-nodes-dive_linux_amd64.tar.gz
+    uri: https://github.com/caiobegotti/nodes-dive/releases/download/v0.1.0/nodes-dive_linux_amd64.tar.gz
     sha256: ""
     files:
-    - from: "./krew-nodes-dive"
+    - from: "./nodes-dive"
       to: "."
-    bin: "krew-nodes-dive"
+    bin: "nodes-dive"
   - selector:
       matchLabels:
         os: darwin
         arch: amd64
-    uri: https://github.com/caiobegotti/krew-nodes-dive/releases/download/v0.1.0/krew-nodes-dive_darwin_amd64.tar.gz
+    uri: https://github.com/caiobegotti/nodes-dive/releases/download/v0.1.0/nodes-dive_darwin_amd64.tar.gz
     sha256: ""
     files:
-    - from: "./krew-nodes-dive"
+    - from: "./nodes-dive"
       to: "."
-    bin: "krew-nodes-dive"
+    bin: "nodes-dive"
   - selector:
       matchLabels:
         os: windows
         arch: amd64
-    uri: https://github.com/caiobegotti/krew-nodes-dive/releases/download/v0.1.0/krew-nodes-dive_windows_amd64.zip
+    uri: https://github.com/caiobegotti/nodes-dive/releases/download/v0.1.0/nodes-dive_windows_amd64.zip
     sha256: ""
     files:
-    - from: "/krew-nodes-dive.exe"
+    - from: "/nodes-dive.exe"
       to: "."
-    bin: "krew-nodes-dive.exe"
+    bin: "nodes-dive.exe"
   shortDescription: A new plugin
-  homepage: https://github.com/caiobegotti/krew-nodes-dive
+  homepage: https://github.com/caiobegotti/nodes-dive
   caveats: |
     Usage:
-      $ kubectl krew-nodes-dive
+      $ kubectl nodes-dive
 
     For additional options:
-      $ kubectl krew-nodes-dive --help
-      or https://github.com/caiobegotti/krew-nodes-dive/blob/v0.1.0/doc/USAGE.md
+      $ kubectl nodes-dive --help
+      or https://github.com/caiobegotti/nodes-dive/blob/v0.1.0/doc/USAGE.md
 
   description: |
     This is a new plugin

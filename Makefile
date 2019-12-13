@@ -7,7 +7,7 @@ test:
 
 .PHONY: bin
 bin: fmt vet
-	go build -o bin/krew-nodes-dive github.com/caiobegotti/krew-nodes-dive/cmd/plugin
+	go build -o bin/nodes-dive github.com/caiobegotti/nodes-dive/cmd/plugin
 
 .PHONY: fmt
 fmt:
