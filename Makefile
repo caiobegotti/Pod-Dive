@@ -1,13 +1,13 @@
 
 export GO111MODULE=on
 
-.PHONY: test
-test:
-	go test ./pkg/... ./cmd/... -coverprofile cover.out
-
 .PHONY: bin
 bin: fmt vet
 	go build -o bin/node-dive github.com/caiobegotti/node-dive/cmd/plugin
+
+.PHONY: test
+test:
+	go test ./pkg/... ./cmd/... -coverprofile cover.out
 
 .PHONY: fmt
 fmt:
