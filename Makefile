@@ -1,13 +1,14 @@
 
 export GO111MODULE=on
-
-.PHONY: test
-test:
-	go test ./pkg/... ./cmd/... -coverprofile cover.out
+export GOROOT=$(PWD)
 
 .PHONY: bin
 bin: fmt vet
 	go build -o bin/pod-dive github.com/caiobegotti/pod-dive/cmd/plugin
+
+.PHONY: test
+test:
+	go test ./pkg/... ./cmd/... -coverprofile cover.out
 
 .PHONY: fmt
 fmt:
