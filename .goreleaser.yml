@@ -1,10 +1,10 @@
-project_name: node-dive
+project_name: pod-dive
 release:
   github:
     owner: caiobegotti
-    name: node-dive
+    name: pod-dive
 builds:
-  - id: node-dive
+  - id: pod-dive
     goos:
     - linux
     - windows
@@ -17,11 +17,11 @@ builds:
       - GO111MODULE=on
     main: cmd/plugin/main.go
     ldflags: -s -w
-      -X github.com/caiobegotti/node-dive/pkg/version.version=
+      -X github.com/caiobegotti/pod-dive/pkg/version.version=
 archives:
-  - id: node-dive
+  - id: pod-dive
     builds:
-    - node-dive
+    - pod-dive
     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
     format_overrides:
     - goos: windows

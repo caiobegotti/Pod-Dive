@@ -1,7 +1,7 @@
 apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
-  name: node-dive
+  name: pod-dive
 spec:
   version: "v0.1.0"
   platforms:
@@ -9,41 +9,41 @@ spec:
       matchLabels:
         os: linux
         arch: amd64
-    uri: https://github.com/caiobegotti/node-dive/releases/download/v0.1.0/node-dive_linux_amd64.tar.gz
+    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.0/pod-dive_linux_amd64.tar.gz
     sha256: ""
     files:
-    - from: "./node-dive"
+    - from: "./pod-dive"
       to: "."
-    bin: "node-dive"
+    bin: "pod-dive"
   - selector:
       matchLabels:
         os: darwin
         arch: amd64
-    uri: https://github.com/caiobegotti/node-dive/releases/download/v0.1.0/node-dive_darwin_amd64.tar.gz
+    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.0/pod-dive_darwin_amd64.tar.gz
     sha256: ""
     files:
-    - from: "./node-dive"
+    - from: "./pod-dive"
       to: "."
-    bin: "node-dive"
+    bin: "pod-dive"
   - selector:
       matchLabels:
         os: windows
         arch: amd64
-    uri: https://github.com/caiobegotti/node-dive/releases/download/v0.1.0/node-dive_windows_amd64.zip
+    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.0/pod-dive_windows_amd64.zip
     sha256: ""
     files:
-    - from: "/node-dive.exe"
+    - from: "/pod-dive.exe"
       to: "."
-    bin: "node-dive.exe"
+    bin: "pod-dive.exe"
   shortDescription: A kubectl Krew plugin to dive into your Kubernetes nodes workloads
-  homepage: https://github.com/caiobegotti/node-dive
+  homepage: https://github.com/caiobegotti/pod-dive
   caveats: |
     Usage:
-      $ kubectl node-dive
+      $ kubectl pod-dive
 
     For additional options:
-      $ kubectl node-dive --help
-      or https://github.com/caiobegotti/node-dive/blob/v0.1.0/doc/USAGE.md
+      $ kubectl pod-dive --help
+      or https://github.com/caiobegotti/pod-dive/blob/v0.1.0/doc/USAGE.md
 
   description: |
     A kubectl Krew plugin to dive into your Kubernetes nodes workloads

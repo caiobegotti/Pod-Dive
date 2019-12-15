@@ -7,7 +7,7 @@ test:
 
 .PHONY: bin
 bin: fmt vet
-	go build -o bin/node-dive github.com/caiobegotti/node-dive/cmd/plugin
+	go build -o bin/pod-dive github.com/caiobegotti/pod-dive/cmd/plugin
 
 .PHONY: fmt
 fmt:
@@ -27,3 +27,7 @@ kubernetes-deps:
 .PHONY: setup
 setup:
 	make -C setup
+
+# https://github.com/guessi/kubectl-grep/blo
+
+# https://github.com/corneliusweig/ketall/blob/master/Makefile

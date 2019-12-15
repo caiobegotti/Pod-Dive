@@ -103,6 +103,8 @@ github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869/go.mod h1:Ekp36dR
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/bradfitz/go-smtpd v0.0.0-20170404230938-deb6d6237625/go.mod h1:HYsPBTaaSFSlLx/70C2HPIMNZpVV8+vt/A+FMnYP11g=
 github.com/briankassouf/jose v0.9.1/go.mod h1:HQhVmdUf7dBNwIIdBTivnCDxcf6IZY3/zrb+uKSJz6Y=
+github.com/caiobegotti/node-dive v0.0.0-20191213204158-945d335c69da h1:z3yupSbF/kmVJ0f3/zwt6ReaT81YWv6txigWUMgPVPs=
+github.com/caiobegotti/node-dive v0.0.0-20191213204158-945d335c69da/go.mod h1:NEoF9vbE3s1QQkELQhmB+KCnaYZjtLhIJkSCHxKqJM8=
 github.com/cenkalti/backoff v2.0.0+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/cenkalti/backoff v2.1.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/census-instrumentation/opencensus-proto v0.2.0/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
@@ -1217,6 +1219,7 @@ k8s.io/apimachinery v0.0.0-20190802060556-6fa4771c83b3 h1:ov3gR/oGSdOkfEetREkvyr
 k8s.io/apimachinery v0.0.0-20190802060556-6fa4771c83b3/go.mod h1:+ntn62igV2hyNj7/0brOvXSMONE2KxcePkSxK7/9FFQ=
 k8s.io/apimachinery v0.0.0-20190814100815-533d101be9a6 h1:g3kHsVIF7tLDtdP1RPw/Kuy3ANzPG5QPVwQ52qYkI0U=
 k8s.io/apimachinery v0.0.0-20190814100815-533d101be9a6/go.mod h1:MAmngDqHkEif0Kxdsl08wStgNTmHhat4DuIUyb4LbCc=
+k8s.io/apimachinery v0.17.0 h1:xRBnuie9rXcPxUkDizUsGvPf1cnlZCFu210op7J7LJo=
 k8s.io/cli-runtime v0.0.0-20190314001948-2899ed30580f h1:gRAqn9Z3rp62UwLU3PdC7Lhmsvd3e9PXLsq7EG+bq1s=
 k8s.io/cli-runtime v0.0.0-20190314001948-2899ed30580f/go.mod h1:qWnH3/b8sp/l7EvlDh7ulDU3UWA4P4N1NFbEEP791tM=
 k8s.io/cli-runtime v0.0.0-20190816104207-11248ecae1e2 h1:YKgxj5sxTHy5ZCuQ5txMHs7cBPDh/mPaxbZXCkjI4Oc=
