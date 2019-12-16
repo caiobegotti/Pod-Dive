@@ -22,6 +22,31 @@ It's much faster than running multiple `kubectl` commands and having to scroll u
 ## What does it look like
 
 ```
+$ kubectl pod-dive -h
+Dives into a node after the desired pod and returns data associated
+with the pod no matter where it is running, such as its origin workload,
+namespace, the node where it is running and its node pod siblings, as
+well basic health status of it all.
+
+The purpose is to have meaningful pod info at a glance without needing to
+run multiple kubectl commands to see what else is running next to your
+pod in a given node inside a huge cluster, because sometimes all
+you've got from an alert is the pod name.
+
+Usage:
+  pod-dive [pod name] [flags]
+
+Examples:
+
+Cluster-wide dive after a pod
+$ kubectl pod-dive thanos-store-0
+
+Restricts the dive to a namespace (faster in big clusters)
+$ kubectl pod-dive elasticsearch-curator-1576112400-97htk -n logging
+
+```
+
+```
 $ kubectl pod-dive kafka-operator-kafka-0
 Diving after pod kafka-operator-kafka-1:
 
