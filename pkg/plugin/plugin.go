@@ -132,7 +132,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 						"Failed to retrieve replica sets data, AppsV1 API was not available.")
 				}
 
-				log.Info("[type]         │ └─┬─ %s", strings.ToLower(existingOwnerRef.Kind))
+				log.Info("[type]         │ └─┬─ %s [deployment]", strings.ToLower(existingOwnerRef.Kind))
 				if rsObject.Status.Replicas == 1 {
 					log.Info("[workload]     │   └─┬─ %s [%d replica]",
 						existingOwnerRef.Name,
