@@ -1,4 +1,4 @@
-# pod-dive
+# Pod dive
 
 ![dive into kubernetes nodes workloads](logo-256.png)
 
