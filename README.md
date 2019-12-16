@@ -22,7 +22,7 @@ It's much faster than running multiple `kubectl` commands and having to scroll u
 ## What does it look like
 
 ```
-$ kubectl pod-dive -h
+$ kubectl pod-dive --help
 Dives into a node after the desired pod and returns data associated
 with the pod no matter where it is running, such as its origin workload,
 namespace, the node where it is running and its node pod siblings, as
