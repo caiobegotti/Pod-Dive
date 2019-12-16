@@ -86,3 +86,10 @@ Stuck:
 Terminations:
     vault-renewer error [code 7]
 ```
+
+## TODOs
+
+- namespaces via command flag to make it even faster
+- cleanup template command flags that are optional
+- some degree of info about replicasets
+- tests
