@@ -47,7 +47,7 @@ $ kubectl pod-dive elasticsearch-curator-1576112400-97htk -n logging
 
 ```
 $ kubectl pod-dive kafka-operator-kafka-0
-Diving after pod kafka-operator-kafka-1:
+Diving after pod kafka-operator-kafka-0:
 
 [node]      gke-staging-default-pool-acca72c6-klsn [ready]
 [namespace]    ├─┬─ kafka
