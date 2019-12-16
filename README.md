@@ -15,4 +15,4 @@ kubectl pod-dive
 
 ## Why use it
 
-It's simply much faster than running multiple `kubectl` commands and having to scroll up and down to look for critical pod info.
+It's much faster than running multiple `kubectl` commands and having to scroll up and down to look for critical pod info.
