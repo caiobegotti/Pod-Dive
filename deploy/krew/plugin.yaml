@@ -37,12 +37,11 @@ spec:
     bin: "pod-dive-amd64-windows.exe"
   shortDescription: A kubectl Krew plugin to dive into your Kubernetes nodes workloads
   homepage: https://github.com/caiobegotti/pod-dive
-  caveats: |
-    Usage:
-      $ kubectl pod-dive [pod name]
-
-    For additional options:
-      $ kubectl pod-dive --help
-
   description: |
     A kubectl Krew plugin to dive into your Kubernetes nodes workloads
+
+    Usage
+      $ kubectl pod-dive [pod name]
+
+    For additional options
+      $ kubectl pod-dive --help
