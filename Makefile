@@ -81,10 +81,6 @@ coverage: $(BUILDDIR)
 dev: CGO_ENABLED := 1
 dev: GO_LDFLAGS := $(subst -s -w,,$(GO_LDFLAGS))
 
-# go get k8s.io/client-go@v11.0.0
-# go get k8s.io/api@kubernetes-1.14.0
-# go get k8s.io/apimachinery@kubernetes-1.14.0
-# go get k8s.io/cli-runtime@kubernetes-1.14.0
 dev:
 	go build -race -ldflags $(GO_LDFLAGS) -o pod-dive $(REPOPATH)/cmd/plugin
 
@@ -126,6 +122,17 @@ deploy: $(CHECKSUMS)
 
 .PHONY: dist
 dist: $(DISTFILE)
+
+.PHONY: compact
+compact: build
+	cd out/ && \
+	tar cvvfz pod-dive-amd64-darwin.tar.gz pod-dive-amd64-darwin && \
+	tar cvvfz pod-dive-amd64-linux.tar.gz pod-dive-amd64-linux && \
+	zip pod-dive-amd64-windows.exe.zip pod-dive-amd64-windows.exe
+
+.PHONY: upload
+upload: compact
+	openssl sha256 out/*.tar.gz out/*.zip
 
 .PHONY: clean
 clean:

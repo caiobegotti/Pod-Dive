@@ -3,47 +3,46 @@ kind: Plugin
 metadata:
   name: pod-dive
 spec:
-  version: "v0.1.0"
+  version: "v0.1.2"
   platforms:
   - selector:
       matchLabels:
         os: linux
         arch: amd64
-    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.0/pod-dive_linux_amd64.tar.gz
-    sha256: ""
+    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.2/pod-dive-amd64-linux.tar.gz
+    sha256: "868da54fb3af2802d5d5efdbc26347536c0267e0a7e5e201546514e73233d92a"
     files:
-    - from: "./pod-dive"
+    - from: "./pod-dive-amd64-linux"
       to: "."
-    bin: "pod-dive"
+    bin: "pod-dive-amd64-linux"
   - selector:
       matchLabels:
         os: darwin
         arch: amd64
-    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.0/pod-dive_darwin_amd64.tar.gz
-    sha256: ""
+    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.2/pod-dive-amd64-darwin.tar.gz
+    sha256: "1a1f94ef30c2583022bde215573e088e5b9911e3f771ae598515d10bed4fa4e2"
     files:
-    - from: "./pod-dive"
+    - from: "./pod-dive-amd64-darwin"
       to: "."
-    bin: "pod-dive"
+    bin: "pod-dive-amd64-darwin"
   - selector:
       matchLabels:
         os: windows
         arch: amd64
-    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.0/pod-dive_windows_amd64.zip
-    sha256: ""
+    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.2/pod-dive-amd64-windows.exe.zip
+    sha256: "852172886be95b7737da827a17fbdf229c3fe02235341b643498e239a4640edf"
     files:
-    - from: "/pod-dive.exe"
+    - from: "./pod-dive-amd64-windows.exe"
       to: "."
-    bin: "pod-dive.exe"
+    bin: "pod-dive-amd64-windows.exe"
   shortDescription: A kubectl Krew plugin to dive into your Kubernetes nodes workloads
   homepage: https://github.com/caiobegotti/pod-dive
   caveats: |
     Usage:
-      $ kubectl pod-dive
+      $ kubectl pod-dive [pod name]
 
     For additional options:
       $ kubectl pod-dive --help
-      or https://github.com/caiobegotti/pod-dive/blob/v0.1.0/doc/USAGE.md
 
   description: |
     A kubectl Krew plugin to dive into your Kubernetes nodes workloads
