@@ -8,6 +8,8 @@ Icon art made by [Smashicons](https://www.flaticon.com/authors/smashicons) from 
 
 ## Quick Start
 
+If you don't use Krew to manage `kubectl` plugins [you can simply download the binary here](https://github.com/caiobegotti/Pod-Dive/releases) and put it in your PATH.
+
 ```
 kubectl krew install pod-dive
 kubectl pod-dive
