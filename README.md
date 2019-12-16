@@ -43,7 +43,6 @@ $ kubectl pod-dive thanos-store-0
 
 Restricts the dive to a namespace (faster in big clusters)
 $ kubectl pod-dive elasticsearch-curator-1576112400-97htk -n logging
-
 ```
 
 ```
