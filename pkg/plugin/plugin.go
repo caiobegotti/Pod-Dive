@@ -15,16 +15,16 @@ import (
 // krew flags
 // namespace
 // no pod name
-// non existant pod name
+// non existent pod name
 // node not ready
-// pod from a job/cron
+// pod from a job
 // pod from sts
 // pod from deploy
 // manual pod
 // bad chars in pod name (space, with quotes, escaping, @#$%=)
 // with and without init containers
 // containers with and without restarts
-// pod with and without terminated
+// pod with and without terminations
 // kube-proxy-gke-staging-default-pool-acca72c6-klsn container
 // 2 pods with the same name, different namespace
 
