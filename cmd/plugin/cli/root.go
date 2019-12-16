@@ -53,7 +53,7 @@ $ kubectl pod-dive elasticsearch-curator-1576112400-97htk -n logging`,
 
 			/*
 				if namespace == nil || *namespace == "" {
-					log.Instructions("No namespace given with -n/--namespace, this implies cluster scope!")
+					log.Info("No namespace given with -n/--namespace, this implies cluster scope!")
 				}
 			*/
 

@@ -13,7 +13,7 @@ func NewLogger() *Logger {
 	return &Logger{}
 }
 
-func (l *Logger) Info(msg string, args ...interface{}) {
+func (l *Logger) Notice(msg string, args ...interface{}) {
 	c := color.New(color.FgHiCyan)
 	c.Println(fmt.Sprintf(msg, args...))
 }
@@ -23,7 +23,7 @@ func (l *Logger) Error(err error) {
 	c.Println(fmt.Sprintf("%#v", err))
 }
 
-func (l *Logger) Instructions(msg string, args ...interface{}) {
+func (l *Logger) Info(msg string, args ...interface{}) {
 	white := color.New(color.FgHiWhite)
 	white.Println(fmt.Sprintf(msg, args...))
 }
