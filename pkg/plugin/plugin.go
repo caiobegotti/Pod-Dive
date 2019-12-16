@@ -10,36 +10,23 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-// INPUT: pod name
-
-// DO:
-//		1.0 traverse all namespaces OK
-//		1.0 find pod OK
-//		1.0 get its namespace: metadata.namespace OK
-//		1.0 get its node: spec.nodeName OK
-//		2.0 pass namespace as option
-//		2.0 get its workload: metadata.ownerReferences.kind,.name OK
-
-// OUTPUT:
-//		2.0 pod cpu/mem usage
-//		2.0 node cpu/mem usage
-
-// TEST:
-//		1.0 krew flags
-//		1.0 namespace
-//		1.0 no pod name
-//		1.0 non existant pod name
-//		1.0 node not ready
-//		1.0 pod from a job/cron
-//		1.0 pod from sts
-//		1.0 pod from deploy
-//		1.0 manual pod
-//		1.0 bad chars in pod name (space, with quotes, escaping, @#$%=)
-//		1.0 with and without init containers
-//		1.0 containers with and without restarts
-//		1.0 pod with and without terminated
-//		1.0 kube-proxy-gke-staging-default-pool-acca72c6-klsn container
-//		1.0 2 pods with the same name, different namespace
+// TESTS
+//
+// krew flags
+// namespace
+// no pod name
+// non existant pod name
+// node not ready
+// pod from a job/cron
+// pod from sts
+// pod from deploy
+// manual pod
+// bad chars in pod name (space, with quotes, escaping, @#$%=)
+// with and without init containers
+// containers with and without restarts
+// pod with and without terminated
+// kube-proxy-gke-staging-default-pool-acca72c6-klsn container
+// 2 pods with the same name, different namespace
 
 func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan string) error {
 	config, err := configFlags.ToRESTConfig()
