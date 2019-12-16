@@ -10,7 +10,7 @@ spec:
         os: linux
         arch: amd64
     uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.2/pod-dive-amd64-linux.tar.gz
-    sha256: "868da54fb3af2802d5d5efdbc26347536c0267e0a7e5e201546514e73233d92a"
+    sha256: "508a96f1b63484e0ff2790c5a3fa04938466ef7b47103e026cbc2a0ec049e0b2"
     files:
     - from: "./pod-dive-amd64-linux"
       to: "."
@@ -20,7 +20,7 @@ spec:
         os: darwin
         arch: amd64
     uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.2/pod-dive-amd64-darwin.tar.gz
-    sha256: "1a1f94ef30c2583022bde215573e088e5b9911e3f771ae598515d10bed4fa4e2"
+    sha256: "b243737915199a356130c3867241c0c47313d69855e3e419f6c51cf24c34ff04"
     files:
     - from: "./pod-dive-amd64-darwin"
       to: "."
@@ -30,7 +30,7 @@ spec:
         os: windows
         arch: amd64
     uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.2/pod-dive-amd64-windows.exe.zip
-    sha256: "852172886be95b7737da827a17fbdf229c3fe02235341b643498e239a4640edf"
+    sha256: "e470c3a86611c3545fa7f5e75479d5f873f3ede6356bf6166bf5a6063703c1d0"
     files:
     - from: "./pod-dive-amd64-windows.exe"
       to: "."
