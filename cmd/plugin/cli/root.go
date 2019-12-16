@@ -41,7 +41,7 @@ $ kubectl pod-dive elasticsearch-curator-1576112400-97htk -n logging`,
 			viper.BindPFlags(cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			//log := logger.NewLogger()
+			// log := logger.NewLogger()
 
 			if len(args) < 1 {
 				return errors.New("A pod name is required!")

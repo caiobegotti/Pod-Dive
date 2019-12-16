@@ -10,16 +10,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-/*
-time comparison: N kubectls versus pod-dive
-real	0m1.647s
-user	0m0.134s
-sys	0m0.043s
-
-
-feature: all info needed instantly shown in a single term scroll on macos default window
-*/
-
 // INPUT: pod name
 
 // DO:
@@ -31,9 +21,6 @@ feature: all info needed instantly shown in a single term scroll on macos defaul
 //		2.0 get its workload: metadata.ownerReferences.kind,.name OK
 
 // OUTPUT:
-// 		1.0 master node or not
-//		1.0 healthy node or not
-//		1.0 pods in node
 //		2.0 pod cpu/mem usage
 //		2.0 node cpu/mem usage
 
@@ -51,8 +38,10 @@ feature: all info needed instantly shown in a single term scroll on macos defaul
 //		1.0 with and without init containers
 //		1.0 containers with and without restarts
 //		1.0 pod with and without terminated
+//		1.0 kube-proxy-gke-staging-default-pool-acca72c6-klsn container
+//		1.0 2 pods with the same name, different namespace
 
-func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputCh chan string) error {
+func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan string) error {
 	config, err := configFlags.ToRESTConfig()
 	if err != nil {
 		return errors.Wrap(err, "Failed to read kubeconfig")
@@ -65,38 +54,45 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputCh chan string)
 
 	log := logger.NewLogger()
 
-	podName := <-outputCh
-	podField := "metadata.name=" + podName
-	log.Instructions("Diving after %s:", podName)
+	podName := <-outputChan
+	podFieldSelector := "metadata.name=" + podName
+	log.Instructions("Diving after pod %s:", podName)
 
 	// BEGIN tree separator
 	log.Instructions("")
 
-	podFind, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{FieldSelector: podField})
-	if err != nil {
-		return errors.Wrap(err, "Failed to list cluster pods")
-	} else if len(podFind.Items) == 0 {
-		log.Instructions("Expected items in pods data but got nothing")
+	// seek the whole cluster, in all namespaces, for the pod name
+	podFind, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{FieldSelector: podFieldSelector})
+	if err != nil || len(podFind.Items) == 0 {
+		return errors.Wrap(err, "Failed to list cluster pods, set a config context or verify the API server.")
 	}
 
-	podObject, err := clientset.CoreV1().Pods(podFind.Items[0].Namespace).Get(podFind.Items[0].Name, metav1.GetOptions{})
-	if err != nil {
-		return errors.Wrap(err, "Failed to get pod info")
-	}
+	// we can save one API call here, making it much faster and smaller, hopefully
+	// podObject, err := clientset.CoreV1().Pods(podFind.Items[0].Namespace).Get(podFind.Items[0].Name, metav1.GetOptions{})
+	// if err != nil {
+	// 		return errors.Wrap(err, "Failed to get pod info")
+	// 		}
+	podObject := podFind.Items[0]
 
+	// basically to create the ascii tree of siblings below
 	nodeObject, err := clientset.CoreV1().Nodes().Get(podObject.Spec.NodeName, metav1.GetOptions{})
 	if err != nil {
 		return errors.Wrap(err, "Failed to get nodes info")
 	}
 
-	nodeField := "spec.nodeName=" + nodeObject.Name
-	nodePods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{FieldSelector: nodeField})
+	nodeFieldSelector := "spec.nodeName=" + nodeObject.Name
+	nodePods, err := clientset.CoreV1().Pods("").List(metav1.ListOptions{FieldSelector: nodeFieldSelector})
 	if err != nil {
 		return errors.Wrap(err, "Failed to get sibling pods info")
 	}
 
+	// this will be used to show whether the pod is running inside a master node or not
+	nodeLabels := nodeObject.ObjectMeta.GetLabels()
+
 	var nodeCondition string
 	nodeConditions := nodeObject.Status.Conditions
+
+	// we only care about the critical ones here
 	for _, condition := range nodeConditions {
 		if condition.Type == "Ready" {
 			if condition.Status == "False" {
@@ -109,19 +105,24 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputCh chan string)
 		}
 	}
 
-	nodeLabels := nodeObject.ObjectMeta.GetLabels()
+	// i like how ascii tree easily convey meaning, the hierarchy of objects inside
+	// the cluster and it looks cool :-) i just am not so sure about how to present
+	// secondary info such as restart counts or status along these, as well the headers
+	// of each level... at least currently it's quite doable to strip them out with
+	// sed as they are always grouped by either [] or () so the actual tree is intact
 	if nodeLabels["kubernetes.io/role"] == "master" {
-		log.Instructions("[node]      %s (%s, %s)", podObject.Spec.NodeName, nodeLabels["kubernetes.io/role"], nodeCondition)
+		log.Instructions("[node]      %s [%s, %s]", podObject.Spec.NodeName, nodeLabels["kubernetes.io/role"], nodeCondition)
 	} else {
-		log.Instructions("[node]      %s (%s)", podObject.Spec.NodeName, nodeCondition)
+		log.Instructions("[node]      %s [%s]", podObject.Spec.NodeName, nodeCondition)
 	}
-
-	// if ReplicaSet, go over it all again
+	// FIXME: if ReplicaSet, go over it all again
+	// FIXME: put everything outside getownerreferences()
+	// FIXME: log.Info("%s", strings.ToLower(podObject.Status.Phase))
 	for _, existingOwnerRef := range podObject.GetOwnerReferences() {
 		log.Instructions("[namespace]    ├─┬─ %s", podObject.Namespace)
 		log.Instructions("[type]         │ └─┬─ %s", strings.ToLower(existingOwnerRef.Kind))
-		log.Instructions("[workload]     │   └─┬─ %s", existingOwnerRef.Name)
-		log.Instructions("[pod]          │     └─┬─ %s", podName)
+		log.Instructions("[workload]     │   └─┬─ %s [N replicas]", existingOwnerRef.Name)
+		log.Instructions("[pod]          │     └─┬─ %s [%s]", podObject.GetName(), podObject.Status.Phase)
 
 		for num, val := range podObject.Status.ContainerStatuses {
 			if num == 0 {
@@ -130,17 +131,17 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputCh chan string)
 					// terminate ascii tree if this is the last item
 					if val.RestartCount == 1 {
 						// with singular
-						log.Instructions("[containers]   │       └─── %s (%d restart)", val.Name, val.RestartCount)
+						log.Instructions("[containers]   │       └─── %s [%d restart]", val.Name, val.RestartCount)
 					} else {
 						// with plural
-						log.Instructions("[containers]   │       └─── %s (%d restarts)", val.Name, val.RestartCount)
+						log.Instructions("[containers]   │       └─── %s [%d restarts]", val.Name, val.RestartCount)
 					}
 				} else {
-					// connect the ascii tree to next link
+					// connect the ascii tree with next link
 					if val.RestartCount == 1 {
-						log.Instructions("[containers]   │       ├─── %s (%d restart)", val.Name, val.RestartCount)
+						log.Instructions("[containers]   │       ├─── %s [%d restart]", val.Name, val.RestartCount)
 					} else {
-						log.Instructions("[containers]   │       ├─── %s (%d restarts)", val.Name, val.RestartCount)
+						log.Instructions("[containers]   │       ├─── %s [%d restarts]", val.Name, val.RestartCount)
 					}
 				}
 			} else {
@@ -148,22 +149,22 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputCh chan string)
 				if num == len(podObject.Status.ContainerStatuses)-1 {
 					if len(podObject.Spec.InitContainers) == 0 {
 						if val.RestartCount == 1 {
-							log.Instructions("               │       └─── %s (%d restart)", val.Name, val.RestartCount)
+							log.Instructions("               │       └─── %s [%d restart]", val.Name, val.RestartCount)
 						} else {
-							log.Instructions("               │       └─── %s (%d restarts)", val.Name, val.RestartCount)
+							log.Instructions("               │       └─── %s [%d restarts]", val.Name, val.RestartCount)
 						}
 					} else {
 						if val.RestartCount == 1 {
-							log.Instructions("               │       ├─── %s (%d restart)", val.Name, val.RestartCount)
+							log.Instructions("               │       ├─── %s [%d restart]", val.Name, val.RestartCount)
 						} else {
-							log.Instructions("               │       ├─── %s (%d restarts)", val.Name, val.RestartCount)
+							log.Instructions("               │       ├─── %s [%d restarts]", val.Name, val.RestartCount)
 						}
 					}
 				} else {
 					if val.RestartCount == 1 {
-						log.Instructions("               │       ├─── %s (%d restart)", val.Name, val.RestartCount)
+						log.Instructions("               │       ├─── %s [%d restart]", val.Name, val.RestartCount)
 					} else {
-						log.Instructions("               │       ├─── %s (%d restarts)", val.Name, val.RestartCount)
+						log.Instructions("               │       ├─── %s [%d restarts]", val.Name, val.RestartCount)
 					}
 				}
 			}
@@ -175,29 +176,33 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputCh chan string)
 		for num, val := range podObject.Status.InitContainerStatuses {
 			if num == len(podObject.Status.InitContainerStatuses)-1 {
 				if val.RestartCount == 1 {
-					log.Instructions("               │       └─── %s (init, %d restart)", val.Name, val.RestartCount)
+					log.Instructions("               │       └─── %s [init, %d restart]", val.Name, val.RestartCount)
 				} else {
-					log.Instructions("               │       └─── %s (init, %d restarts)", val.Name, val.RestartCount)
+					log.Instructions("               │       └─── %s [init, %d restarts]", val.Name, val.RestartCount)
 				}
 			} else {
 				if val.RestartCount == 1 {
-					log.Instructions("               │       ├─── %s (init, %d restart)", val.Name, val.RestartCount)
+					log.Instructions("               │       ├─── %s [init, %d restart]", val.Name, val.RestartCount)
 				} else {
-					log.Instructions("               │       ├─── %s (init, %d restarts)", val.Name, val.RestartCount)
+					log.Instructions("               │       ├─── %s [init, %d restarts]", val.Name, val.RestartCount)
 				}
 			}
 		}
 	}
 
-	allNodePods := nodePods.Items
 	siblingsPods := []string{}
-
-	for _, val := range allNodePods {
-		if val.GetName() != podName {
+	for _, val := range nodePods.Items {
+		// remove its own name from the node pods list
+		if val.GetName() != podObject.GetName() {
 			siblingsPods = append(siblingsPods, val.GetName())
 		}
 	}
 
+	// the purpose of having a tree of all siblings pods of the desired node
+	// is that there are scenarios where your pod should not be running
+	// next to other critical or broken workloads inside the same node, so
+	// knowing what else is next to your pod is quite helpful when you
+	// are planning affinities and selectors
 	for num, val := range siblingsPods {
 		if num == 0 {
 			if num == len(siblingsPods)-1 {
@@ -217,34 +222,25 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputCh chan string)
 	// END tree separator
 	log.Instructions("")
 
-	log.Instructions("Last terminations:")
+	// basic reasons for pods not being in a running state
 	for _, containerStatuses := range podObject.Status.ContainerStatuses {
+		if containerStatuses.LastTerminationState.Waiting != nil {
+			log.Instructions("Stuck:")
+			log.Instructions("    %s %s [code %s]",
+				containerStatuses.Name,
+				strings.ToLower(containerStatuses.LastTerminationState.Waiting.Reason),
+				containerStatuses.LastTerminationState.Waiting.Message)
+
+		}
+
 		if containerStatuses.LastTerminationState.Terminated != nil {
 			if containerStatuses.LastTerminationState.Terminated.Reason != "Completed" {
-				log.Instructions("    %s %s (code %d)", containerStatuses.Name, strings.ToLower(containerStatuses.LastTerminationState.Terminated.Reason), containerStatuses.LastTerminationState.Terminated.ExitCode)
-			}
-		}
-	}
+				log.Instructions("Terminations:")
 
-	/*
-		pod last terminated
-		pod health
-		workload replicas
-		workload name
-		node labels + annotations
-		containers status
-	*/
-
-	// 200ms more to show this
-	conditions := nodeObject.Status.Conditions
-	for _, condition := range conditions {
-		if condition.Type == "Ready" {
-			if condition.Status == "False" {
-				log.Instructions("Node: not ready")
-			} else if condition.Status == "Unknown" {
-				log.Instructions("Node: unknown condition")
-			} else {
-				log.Instructions("Node: ready")
+				log.Instructions("    %s %s [code %d]",
+					containerStatuses.Name,
+					strings.ToLower(containerStatuses.LastTerminationState.Terminated.Reason),
+					containerStatuses.LastTerminationState.Terminated.ExitCode)
 			}
 		}
 	}
