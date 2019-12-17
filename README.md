@@ -2,7 +2,7 @@
 
 ![dive into kubernetes nodes workloads](logo-256.png)
 
-A `kubectl` [Krew](https://krew.dev) plugin to dive into your Kubernetes nodes workloads.
+A `kubectl` [Krew](https://krew.dev) plugin to dive into your Kubernetes nodes pods, and inspect them.
 
 Icon art made by [Smashicons](https://www.flaticon.com/authors/smashicons) from [Flaticon](https://www.flaticon.com/). [We had one before Krew itself](https://github.com/kubernetes-sigs/krew/issues/437), go figure.
 
@@ -47,7 +47,7 @@ $ kubectl pod-dive elasticsearch-curator-1576112400-97htk -n logging
 
 ```
 $ kubectl pod-dive kafka-operator-kafka-0
-Diving after pod kafka-operator-kafka-1:
+Diving after pod kafka-operator-kafka-0:
 
 [node]      gke-staging-default-pool-acca72c6-klsn [ready]
 [namespace]    ├─┬─ kafka
