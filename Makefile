@@ -20,6 +20,7 @@ SHELL := bash
 .ONESHELL:
 .SHELLFLAGS := -eu -o pipefail -c
 .DELETE_ON_ERROR:
+.DEFAULT_GOAL := help
 
 export GO111MODULE ?= on
 export GOARCH      ?= amd64
@@ -81,6 +82,7 @@ help:
 	@echo '  - lint:     run fmt and vet'
 	@echo '  - test:     run unit tests'
 	@echo '  - build:    build binaries for all supported platforms'
+	@echo '  - release:  build, compact, sha256 files for a release'
 
 .PHONY: coverage
 coverage: $(BUILDDIR)
@@ -134,14 +136,14 @@ dist: $(DISTFILE)
 
 .PHONY: compact
 compact: build
-	cd out/ && \
+	@cd out/ && \
 	tar cvvfz pod-dive-amd64-darwin.tar.gz pod-dive-amd64-darwin && \
 	tar cvvfz pod-dive-amd64-linux.tar.gz pod-dive-amd64-linux && \
 	zip pod-dive-amd64-windows.exe.zip pod-dive-amd64-windows.exe
 
-.PHONY: upload
-upload: compact
-	openssl sha256 out/*.tar.gz out/*.zip
+.PHONY: release
+release: compact
+	@openssl sha256 out/*.tar.gz out/*.zip
 
 .PHONY: clean
 clean:
