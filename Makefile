@@ -1,4 +1,5 @@
-# Copyright 2019 Cornelius Weig (from ketall)
+# Copyright 2020 Caio Begotti
+# Copyright 2019 Cornelius Weig (based on the Makefile from ketall)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+# defaults for a better make UX
+MAKEFLAGS += --warn-undefined-variables
+MAKEFLAGS += --no-builtin-rules
+SHELL := bash
+.ONESHELL:
+.SHELLFLAGS := -eu -o pipefail -c
+.DELETE_ON_ERROR:
 
 export GO111MODULE ?= on
 export GOARCH      ?= amd64
