@@ -63,7 +63,7 @@ endif
 GO_FILES  := $(shell find . -type f -name '*.go')
 
 .PHONY: all
-all: clean lint test dev
+all: clean lint test dev ## clean, lint, test and build a dev binary
 
 .PHONY: test
 test:
@@ -71,35 +71,25 @@ test:
 
 .PHONY: help
 help:
-	@echo 'Valid make targets:'
-	@echo '  - all:      build binaries for all supported platforms'
-	@echo '  - clean:    clean up build directory'
-	@echo '  - coverage: run unit tests with coverage'
-	@echo '  - deploy:   build artifacts for a new deployment'
-	@echo '  - dev:      build the binary for the current platform'
-	@echo '  - dist:     create a tar archive of the source code'
-	@echo '  - help:     print this help'
-	@echo '  - lint:     run fmt and vet'
-	@echo '  - test:     run unit tests'
-	@echo '  - build:    build binaries for all supported platforms'
-	@echo '  - release:  build, compact, sha256 files for a release'
+	@# from https://news.ycombinator.com/item?id=21812897
+	@echo -e 'valid make targets:\n'
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {printf "%-10s (%s)\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 .PHONY: coverage
-coverage: $(BUILDDIR)
+coverage: $(BUILDDIR) ## run unit tests with coverage
 	go test -coverprofile=$(BUILDDIR)/coverage.txt -covermode=atomic ./...
 
 .PHONY: dev
 dev: CGO_ENABLED := 1
 dev: GO_LDFLAGS := $(subst -s -w,,$(GO_LDFLAGS))
-
-dev:
+dev: ## build the binary for the current platform
 	go build -race -ldflags $(GO_LDFLAGS) -o pod-dive $(REPOPATH)/cmd/plugin
 
-build: $(GO_FILES) $(BUILDDIR)
+build: $(GO_FILES) $(BUILDDIR) ## build binaries for all supported platforms
 	gox -osarch="$(PLATFORMS)" -ldflags $(GO_LDFLAGS) -output="out/pod-dive-{{.Arch}}-{{.OS}}" $(REPOPATH)/cmd/plugin
 
 .PHONY: lint
-lint:
+lint: ## run golang fmt and vet
 	go fmt ./pkg/... ./cmd/...
 	go vet ./pkg/... ./cmd/...
 
@@ -132,7 +122,7 @@ deploy: $(CHECKSUMS)
 	$(RM) $(BUILDDIR)/LICENSE
 
 .PHONY: dist
-dist: $(DISTFILE)
+dist: $(DISTFILE) ## create a tar archive of the source code
 
 .PHONY: compact
 compact: build
@@ -142,15 +132,13 @@ compact: build
 	zip pod-dive-amd64-windows.exe.zip pod-dive-amd64-windows.exe
 
 .PHONY: release
-release: compact
+release: compact ## build, compact, sha256 files for a release
 	@openssl sha256 out/*.tar.gz out/*.zip
 
 .PHONY: clean
-clean:
+clean: ## clean up build directory and binaries files
 	$(RM) -r $(BUILDDIR) pod-dive
 
 $(BUILDDIR)/pod-dive-amd64-linux: build
 $(BUILDDIR)/pod-dive-amd64-darwin: build
 $(BUILDDIR)/pod-dive-amd64-windows.exe: build
-
-# https://github.com/guessi/kubectl-grep/blo
