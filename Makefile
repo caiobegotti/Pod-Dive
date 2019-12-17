@@ -97,7 +97,7 @@ lint: ## run golang fmt and vet
 %.zip: %.exe
 	cp LICENSE $(BUILDDIR) && \
 	cd $(BUILDDIR) && \
-	zip $(patsubst $(BUILDDIR)/%, %, $@) LICENSE $(patsubst $(BUILDDIR)/%, %, $<)
+	zip $(patsubst $(BUILDDIR)/%, %, $@) $(BUILDDIR)/LICENSE $(patsubst $(BUILDDIR)/%, %, $<)
 
 .PRECIOUS: %.gz
 %.gz: %
@@ -105,7 +105,7 @@ lint: ## run golang fmt and vet
 
 %.tar: %
 	cp LICENSE $(BUILDDIR)
-	tar cf "$@" -C $(BUILDDIR) LICENSE $(patsubst $(BUILDDIR)/%,%,$^)
+	tar cf "$@" -C $(BUILDDIR) $(BUILDDIR)/LICENSE $(patsubst $(BUILDDIR)/%,%,$^)
 
 $(BUILDDIR):
 	mkdir -p "$@"
@@ -126,10 +126,11 @@ dist: $(DISTFILE) ## create a tar archive of the source code
 
 .PHONY: compact
 compact: build
-	@cd out/ && \
-	tar cvvfz pod-dive-amd64-darwin.tar.gz pod-dive-amd64-darwin && \
-	tar cvvfz pod-dive-amd64-linux.tar.gz pod-dive-amd64-linux && \
-	zip pod-dive-amd64-windows.exe.zip pod-dive-amd64-windows.exe
+	@cp LICENSE $(BUILDDIR) && \
+	cd $(BUILDDIR) && \
+	tar cvvfz pod-dive-amd64-darwin.tar.gz pod-dive-amd64-darwin LICENSE && \
+	tar cvvfz pod-dive-amd64-linux.tar.gz pod-dive-amd64-linux LICENSE && \
+	zip pod-dive-amd64-windows.exe.zip pod-dive-amd64-windows.exe LICENSE
 
 .PHONY: release
 release: compact ## build, compact, sha256 files for a release
