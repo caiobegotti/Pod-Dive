@@ -41,8 +41,6 @@ $ kubectl pod-dive elasticsearch-curator-1576112400-97htk -n logging`,
 			viper.BindPFlags(cmd.Flags())
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// log := logger.NewLogger()
-
 			if len(args) < 1 {
 				return errors.New("A pod name is required!")
 			}
@@ -50,12 +48,6 @@ $ kubectl pod-dive elasticsearch-curator-1576112400-97htk -n logging`,
 			podName := args[0]
 			argsChannel := make(chan string, 1)
 			argsChannel <- podName
-
-			/*
-				if namespace == nil || *namespace == "" {
-					log.Info("No namespace given with -n/--namespace, this implies cluster scope!")
-				}
-			*/
 
 			if err := plugin.RunPlugin(KubernetesConfigFlags, argsChannel); err != nil {
 				return errors.Cause(err)
@@ -69,6 +61,25 @@ $ kubectl pod-dive elasticsearch-curator-1576112400-97htk -n logging`,
 
 	KubernetesConfigFlags = genericclioptions.NewConfigFlags(false)
 	KubernetesConfigFlags.AddFlags(cmd.Flags())
+
+	// hide common flags supported by any kubectl command to declutter -h/--help
+	// most people would only (if ever) miss kubeconfig, context or cluster
+	cmd.Flags().MarkHidden("as-group")
+	cmd.Flags().MarkHidden("as")
+	cmd.Flags().MarkHidden("cache-dir")
+	cmd.Flags().MarkHidden("certificate-authority")
+	cmd.Flags().MarkHidden("client-certificate")
+	cmd.Flags().MarkHidden("client-key")
+	cmd.Flags().MarkHidden("cluster")
+	cmd.Flags().MarkHidden("context")
+	cmd.Flags().MarkHidden("insecure-skip-tls-verify")
+	cmd.Flags().MarkHidden("kubeconfig")
+	cmd.Flags().MarkHidden("password")
+	cmd.Flags().MarkHidden("request-timeout")
+	cmd.Flags().MarkHidden("server")
+	cmd.Flags().MarkHidden("token")
+	cmd.Flags().MarkHidden("user")
+	cmd.Flags().MarkHidden("username")
 
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	return cmd

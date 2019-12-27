@@ -64,6 +64,8 @@ func NewPodDivePlugin(configFlags *genericclioptions.ConfigFlags) (*PodDivePlugi
 func (pd *PodDivePlugin) findPodByPodName(name string) error {
 	podFieldSelector := "metadata.name=" + name
 
+	//log.Info("Namespace: %s", configFlags.Namespace)
+
 	// seek the whole cluster, in all namespaces, for the pod name
 	podFind, err := pd.Clientset.CoreV1().Pods("").List(metav1.ListOptions{FieldSelector: podFieldSelector})
 	if err != nil || len(podFind.Items) == 0 {
@@ -135,7 +137,6 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 	podName := <-outputChan
 
 	log := logger.NewLogger()
-	log.Info("Diving after pod %s:\n", podName)
 
 	if err := pd.findPodByPodName(podName); err != nil {
 		return err
@@ -165,14 +166,18 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 			pd.Node.Condition)
 	}
 	// FIXME: if ReplicaSet, go over it all again
-	log.Info("[namespace]    ├─┬─ %s", pd.PodObject.Namespace)
+	log.Info("[namespace]  ├─┬ %s", pd.PodObject.Namespace)
 
 	if pd.PodObject.GetOwnerReferences() == nil {
-		log.Info("[type]         │ └─┬─ pod")
-		log.Info("[workload]     │   └─┬─ [no replica set]]")
+		log.Info("[type]       │ └─┬ pod")
+		log.Info("[workload]   │   └─┬ [no replica set]")
 	} else {
 		for _, existingOwnerRef := range pd.PodObject.GetOwnerReferences() {
-			if strings.ToLower(existingOwnerRef.Kind) == "replicaset" {
+			ownerKind := strings.ToLower(existingOwnerRef.Kind)
+
+			if ownerKind == "replicaset" {
+				log.Info("[type]       │ └─┬ %s [deployment]", ownerKind)
+
 				rsObject, err := pd.Clientset.AppsV1().ReplicaSets(
 					pd.PodObject.GetNamespace()).Get(
 					existingOwnerRef.Name,
@@ -182,25 +187,44 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 						"Failed to retrieve replica sets data, AppsV1 API was not available.")
 				}
 
-				log.Info("[type]         │ └─┬─ %s [deployment]", strings.ToLower(existingOwnerRef.Kind))
 				if rsObject.Status.Replicas == 1 {
-					log.Info("[workload]     │   └─┬─ %s [%d replica]",
+					log.Info("[workload]   │   └─┬ %s [%d replica]",
 						existingOwnerRef.Name,
 						rsObject.Status.Replicas)
 				} else {
-					log.Info("[workload]     │   └─┬─ %s [%d replicas]",
+					log.Info("[workload]   │   └─┬ %s [%d replicas]",
 						existingOwnerRef.Name,
 						rsObject.Status.Replicas)
 				}
+			} else if ownerKind == "statefulset" {
+				log.Info("[type]       │ └─┬ %s", ownerKind)
+
+				ssObject, err := pd.Clientset.AppsV1().StatefulSets(
+					pd.PodObject.GetNamespace()).Get(
+					existingOwnerRef.Name,
+					metav1.GetOptions{})
+				if err != nil {
+					return errors.Wrap(err,
+						"Failed to retrieve stateful set data, AppsV1 API was not available.")
+				}
+				if ssObject.Status.Replicas == 1 {
+					log.Info("[workload]   │   └─┬ %s [%d replica]",
+						existingOwnerRef.Name,
+						ssObject.Status.Replicas)
+				} else {
+					log.Info("[workload]   │   └─┬ %s [%d replicas]",
+						existingOwnerRef.Name,
+						ssObject.Status.Replicas)
+				}
 			} else {
-				log.Info("[type]         │ └─┬─ %s", strings.ToLower(existingOwnerRef.Kind))
-				log.Info("[workload]     │   └─┬─ %s [? replicas]", existingOwnerRef.Name)
+				log.Info("[type]       │ └─┬ %s", ownerKind)
+				log.Info("[workload]   │   └─┬ %s [? replicas]", existingOwnerRef.Name)
 			}
 		}
 	}
 
 	// we have to convert v1.PodPhase to string first, before we lowercase it
-	log.Info("[pod]          │     └─┬─ %s [%s]",
+	log.Info("[pod]        │     └─┬ %s [%s]",
 		pd.PodObject.GetName(),
 		strings.ToLower(string(pd.PodObject.Status.Phase)))
 
@@ -211,17 +235,17 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 				// terminate ascii tree if this is the last item
 				if val.RestartCount == 1 {
 					// with singular
-					log.Info("[containers]   │       └─── %s [%d restart]", val.Name, val.RestartCount)
+					log.Info("[containers] │       └── %s [%d restart]", val.Name, val.RestartCount)
 				} else {
 					// with plural
-					log.Info("[containers]   │       └─── %s [%d restarts]", val.Name, val.RestartCount)
+					log.Info("[containers] │       └── %s [%d restarts]", val.Name, val.RestartCount)
 				}
 			} else {
 				// connect the ascii tree with next link
 				if val.RestartCount == 1 {
-					log.Info("[containers]   │       ├─── %s [%d restart]", val.Name, val.RestartCount)
+					log.Info("[containers] │       ├── %s [%d restart]", val.Name, val.RestartCount)
 				} else {
-					log.Info("[containers]   │       ├─── %s [%d restarts]", val.Name, val.RestartCount)
+					log.Info("[containers] │       ├── %s [%d restarts]", val.Name, val.RestartCount)
 				}
 			}
 		} else {
@@ -229,22 +253,22 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 			if num == len(pd.PodObject.Status.ContainerStatuses)-1 {
 				if len(pd.PodObject.Spec.InitContainers) == 0 {
 					if val.RestartCount == 1 {
-						log.Info("               │       └─── %s [%d restart]", val.Name, val.RestartCount)
+						log.Info("             │       └── %s [%d restart]", val.Name, val.RestartCount)
 					} else {
-						log.Info("               │       └─── %s [%d restarts]", val.Name, val.RestartCount)
+						log.Info("             │       └── %s [%d restarts]", val.Name, val.RestartCount)
 					}
 				} else {
 					if val.RestartCount == 1 {
-						log.Info("               │       ├─── %s [%d restart]", val.Name, val.RestartCount)
+						log.Info("             │       ├── %s [%d restart]", val.Name, val.RestartCount)
 					} else {
-						log.Info("               │       ├─── %s [%d restarts]", val.Name, val.RestartCount)
+						log.Info("             │       ├── %s [%d restarts]", val.Name, val.RestartCount)
 					}
 				}
 			} else {
 				if val.RestartCount == 1 {
-					log.Info("               │       ├─── %s [%d restart]", val.Name, val.RestartCount)
+					log.Info("             │       ├── %s [%d restart]", val.Name, val.RestartCount)
 				} else {
-					log.Info("               │       ├─── %s [%d restarts]", val.Name, val.RestartCount)
+					log.Info("             │       ├── %s [%d restarts]", val.Name, val.RestartCount)
 				}
 			}
 		}
@@ -256,15 +280,15 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 	for num, val := range pd.PodObject.Status.InitContainerStatuses {
 		if num == len(pd.PodObject.Status.InitContainerStatuses)-1 {
 			if val.RestartCount == 1 {
-				log.Info("               │       └─── %s [init, %d restart]", val.Name, val.RestartCount)
+				log.Info("             │       └── %s [init, %d restart]", val.Name, val.RestartCount)
 			} else {
-				log.Info("               │       └─── %s [init, %d restarts]", val.Name, val.RestartCount)
+				log.Info("             │       └── %s [init, %d restarts]", val.Name, val.RestartCount)
 			}
 		} else {
 			if val.RestartCount == 1 {
-				log.Info("               │       ├─── %s [init, %d restart]", val.Name, val.RestartCount)
+				log.Info("             │       ├── %s [init, %d restart]", val.Name, val.RestartCount)
 			} else {
-				log.Info("               │       ├─── %s [init, %d restarts]", val.Name, val.RestartCount)
+				log.Info("             │       ├── %s [init, %d restarts]", val.Name, val.RestartCount)
 			}
 		}
 	}
@@ -282,30 +306,34 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 	// next to other critical or broken workloads inside the same node, so
 	// knowing what else is next to your pod is quite helpful when you
 	// are planning affinities and selectors
+
+	// visual separator since siblings may live in different namespaces
+	log.Info("            ... ")
+
 	for num, val := range siblingsPods {
 		if num == 0 {
 			if num == len(siblingsPods)-1 {
-				log.Info("[siblings]     └─── %s", val)
+				log.Info("[siblings]   └── %s", val)
 			} else {
-				log.Info("[siblings]     ├─── %s", val)
+				log.Info("[siblings]   ├── %s", val)
 			}
 		} else {
 			if num == len(siblingsPods)-1 {
-				log.Info("               └─── %s", val)
+				log.Info("             └── %s", val)
 			} else {
-				log.Info("               ├─── %s", val)
+				log.Info("             ├── %s", val)
 			}
 		}
 	}
 
-	// END tree separator
+	// tree ending separator
 	log.Info("")
 
 	// basic reasons for pods not being in a running state
 	for _, containerStatuses := range pd.PodObject.Status.ContainerStatuses {
 		if containerStatuses.LastTerminationState.Waiting != nil {
-			log.Info("Stuck:")
-			log.Info("    %s %s [code %s]",
+			log.Info("STATUSES:")
+			log.Info("    %s %s [%s]",
 				containerStatuses.Name,
 				strings.ToLower(containerStatuses.LastTerminationState.Waiting.Reason),
 				containerStatuses.LastTerminationState.Waiting.Message)
@@ -314,7 +342,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 
 		if containerStatuses.LastTerminationState.Terminated != nil {
 			if containerStatuses.LastTerminationState.Terminated.Reason != "Completed" {
-				log.Info("Terminations:")
+				log.Info("TERMINATIONS:")
 
 				log.Info("    %s %s [code %d]",
 					containerStatuses.Name,
