@@ -184,7 +184,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 					metav1.GetOptions{})
 				if err != nil {
 					return errors.Wrap(err,
-						"Failed to retrieve replica sets data, AppsV1 API was not available.")
+						"Failed to retrieve replica set data, AppsV1 API was not available.")
 				}
 
 				if rsObject.Status.Replicas == 1 {
@@ -215,6 +215,26 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 					log.Info("[workload]   │   └─┬ %s [%d replicas]",
 						existingOwnerRef.Name,
 						ssObject.Status.Replicas)
+				}
+			} else if ownerKind == "daemonset" {
+				log.Info("[type]       │ └─┬ %s", ownerKind)
+
+				dsObject, err := pd.Clientset.AppsV1().DaemonSets(
+					pd.PodObject.GetNamespace()).Get(
+					existingOwnerRef.Name,
+					metav1.GetOptions{})
+				if err != nil {
+					return errors.Wrap(err,
+						"Failed to retrieve daemon set data, AppsV1 API was not available.")
+				}
+				if dsObject.Status.DesiredNumberScheduled == 1 {
+					log.Info("[workload]   │   └─┬ %s [%d replica]",
+						existingOwnerRef.Name,
+						dsObject.Status.DesiredNumberScheduled)
+				} else {
+					log.Info("[workload]   │   └─┬ %s [%d replicas]",
+						existingOwnerRef.Name,
+						dsObject.Status.DesiredNumberScheduled)
 				}
 			} else {
 				log.Info("[type]       │ └─┬ %s", ownerKind)
