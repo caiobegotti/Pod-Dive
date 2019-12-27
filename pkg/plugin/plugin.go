@@ -5,9 +5,11 @@ import (
 
 	"github.com/caiobegotti/pod-dive/pkg/logger"
 	"github.com/pkg/errors"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 // TESTS
@@ -28,32 +30,44 @@ import (
 // kube-proxy-gke-staging-default-pool-acca72c6-klsn container
 // 2 pods with the same name, different namespace
 
-func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan string) error {
+type NodeInfo struct {
+	Object    *v1.Node
+	Pods      *v1.PodList
+	Labels    map[string]string
+	Condition string
+}
+
+type PodDivePlugin struct {
+	config    *rest.Config
+	Clientset *kubernetes.Clientset
+	PodObject *v1.Pod
+	Node      *NodeInfo
+}
+
+func NewPodDivePlugin(configFlags *genericclioptions.ConfigFlags) (*PodDivePlugin, error) {
 	config, err := configFlags.ToRESTConfig()
 	if err != nil {
-		return errors.Wrap(err, "Failed to read kubeconfig, exiting.")
+		return nil, errors.Wrap(err, "Failed to read kubeconfig, exiting.")
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return errors.Wrap(err, "Failed to create API clientset")
+		return nil, errors.Wrap(err, "Failed to create API clientset")
 	}
 
-	log := logger.NewLogger()
+	return &PodDivePlugin{
+		config:    config,
+		Clientset: clientset,
+	}, nil
+}
 
-	podName := <-outputChan
-	podFieldSelector := "metadata.name=" + podName
-	log.Info("Diving after pod %s:", podName)
-
-	// BEGIN tree separator
-	log.Info("")
+func (pd *PodDivePlugin) findPodByPodName(name string) error {
+	podFieldSelector := "metadata.name=" + name
 
 	// seek the whole cluster, in all namespaces, for the pod name
-	podFind, err := clientset.CoreV1().Pods("").List(
-		metav1.ListOptions{FieldSelector: podFieldSelector})
+	podFind, err := pd.Clientset.CoreV1().Pods("").List(metav1.ListOptions{FieldSelector: podFieldSelector})
 	if err != nil || len(podFind.Items) == 0 {
-		return errors.Wrap(err,
-			"Failed to list cluster pods, set a config context or verify the API server.")
+		return errors.Wrap(err, "Failed to list cluster pods, set a config context or verify the API server.")
 	}
 
 	// we can save one API call here, making it much faster and smaller, hopefully
@@ -62,41 +76,77 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 	// if err != nil {
 	// 	return errors.Wrap(err, "Failed to get pod info")
 	// }
-	podObject := podFind.Items[0]
+	pd.PodObject = &podFind.Items[0]
 
+	return nil
+}
+
+func (pd *PodDivePlugin) findNodeByNodeName() error {
 	// basically to create the ascii tree of siblings below
-	nodeObject, err := clientset.CoreV1().Nodes().Get(
-		podObject.Spec.NodeName, metav1.GetOptions{})
+	nodeObject, err := pd.Clientset.CoreV1().Nodes().Get(pd.PodObject.Spec.NodeName, metav1.GetOptions{})
 	if err != nil {
-		return errors.Wrap(err,
-			"Failed to get nodes info, verify the connection to their pool.")
+		return errors.Wrap(err, "Failed to get nodes info, verify the connection to their pool.")
 	}
 
-	nodeFieldSelector := "spec.nodeName=" + nodeObject.Name
-	nodePods, err := clientset.CoreV1().Pods("").List(
-		metav1.ListOptions{FieldSelector: nodeFieldSelector})
-	if err != nil {
-		return errors.Wrap(err,
-			"Failed to get sibling pods info, API server could not be reached.")
+	pd.Node = &NodeInfo{
+		Object: nodeObject,
 	}
+
+	return nil
+}
+
+func (pd *PodDivePlugin) getNodeInfo() error {
+	nodeFieldSelector := "spec.nodeName=" + pd.Node.Object.Name
+	pods, err := pd.Clientset.CoreV1().Pods("").List(metav1.ListOptions{FieldSelector: nodeFieldSelector})
+	if err != nil {
+		return errors.Wrap(err, "Failed to get sibling pods info, API server could not be reached.")
+	}
+
+	pd.Node.Pods = pods
 
 	// this will be used to show whether the pod is running inside a master node or not
-	nodeLabels := nodeObject.ObjectMeta.GetLabels()
-
-	var nodeCondition string
-	nodeConditions := nodeObject.Status.Conditions
+	pd.Node.Labels = pd.Node.Object.ObjectMeta.GetLabels()
 
 	// we only care about the critical ones here
-	for _, condition := range nodeConditions {
-		if condition.Type == "Ready" {
-			if condition.Status == "False" {
-				nodeCondition = "not ready"
-			} else if condition.Status == "Unknown" {
-				nodeCondition = "unknown state"
-			} else {
-				nodeCondition = "ready"
-			}
+	for _, condition := range pd.Node.Object.Status.Conditions {
+		if condition.Type != "Ready" {
+			continue
 		}
+
+		switch condition.Status {
+		case "False":
+			pd.Node.Condition = "not ready"
+		case "Unknown":
+			pd.Node.Condition = "unknown state"
+		default:
+			pd.Node.Condition = "ready"
+		}
+	}
+
+	return nil
+}
+
+func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan string) error {
+	pd, err := NewPodDivePlugin(configFlags)
+	if err != nil {
+		return err
+	}
+
+	podName := <-outputChan
+
+	log := logger.NewLogger()
+	log.Info("Diving after pod %s:\n", podName)
+
+	if err := pd.findPodByPodName(podName); err != nil {
+		return err
+	}
+
+	if err := pd.findNodeByNodeName(); err != nil {
+		return err
+	}
+
+	if err := pd.getNodeInfo(); err != nil {
+		return err
 	}
 
 	// i like how ascii tree easily convey meaning, the hierarchy of objects inside
@@ -104,27 +154,27 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 	// secondary info such as restart counts or status along these, as well the headers
 	// of each level... at least currently it's quite doable to strip them out with
 	// sed as they are always grouped by either [] or () so the actual tree is intact
-	if nodeLabels["kubernetes.io/role"] == "master" {
+	if pd.Node.Labels["kubernetes.io/role"] == "master" {
 		log.Info("[node]      %s [%s, %s]",
-			podObject.Spec.NodeName,
-			nodeLabels["kubernetes.io/role"],
-			nodeCondition)
+			pd.PodObject.Spec.NodeName,
+			pd.Node.Labels["kubernetes.io/role"],
+			pd.Node.Condition)
 	} else {
 		log.Info("[node]      %s [%s]",
-			podObject.Spec.NodeName,
-			nodeCondition)
+			pd.PodObject.Spec.NodeName,
+			pd.Node.Condition)
 	}
 	// FIXME: if ReplicaSet, go over it all again
-	log.Info("[namespace]    ├─┬─ %s", podObject.Namespace)
+	log.Info("[namespace]    ├─┬─ %s", pd.PodObject.Namespace)
 
-	if podObject.GetOwnerReferences() == nil {
+	if pd.PodObject.GetOwnerReferences() == nil {
 		log.Info("[type]         │ └─┬─ pod")
 		log.Info("[workload]     │   └─┬─ [no replica set]]")
 	} else {
-		for _, existingOwnerRef := range podObject.GetOwnerReferences() {
+		for _, existingOwnerRef := range pd.PodObject.GetOwnerReferences() {
 			if strings.ToLower(existingOwnerRef.Kind) == "replicaset" {
-				rsObject, err := clientset.AppsV1().ReplicaSets(
-					podObject.GetNamespace()).Get(
+				rsObject, err := pd.Clientset.AppsV1().ReplicaSets(
+					pd.PodObject.GetNamespace()).Get(
 					existingOwnerRef.Name,
 					metav1.GetOptions{})
 				if err != nil {
@@ -151,13 +201,13 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 
 	// we have to convert v1.PodPhase to string first, before we lowercase it
 	log.Info("[pod]          │     └─┬─ %s [%s]",
-		podObject.GetName(),
-		strings.ToLower(string(podObject.Status.Phase)))
+		pd.PodObject.GetName(),
+		strings.ToLower(string(pd.PodObject.Status.Phase)))
 
-	for num, val := range podObject.Status.ContainerStatuses {
+	for num, val := range pd.PodObject.Status.ContainerStatuses {
 		if num == 0 {
 			// print header if start of the tree
-			if num == len(podObject.Status.ContainerStatuses)-1 {
+			if num == len(pd.PodObject.Status.ContainerStatuses)-1 {
 				// terminate ascii tree if this is the last item
 				if val.RestartCount == 1 {
 					// with singular
@@ -176,8 +226,8 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 			}
 		} else {
 			// clean tree space for N itens
-			if num == len(podObject.Status.ContainerStatuses)-1 {
-				if len(podObject.Spec.InitContainers) == 0 {
+			if num == len(pd.PodObject.Status.ContainerStatuses)-1 {
+				if len(pd.PodObject.Spec.InitContainers) == 0 {
 					if val.RestartCount == 1 {
 						log.Info("               │       └─── %s [%d restart]", val.Name, val.RestartCount)
 					} else {
@@ -203,8 +253,8 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 	// no need to manually link init containers as there will
 	// always be at leats one container inside the pod above
 	// so they can all be appended here in the ascii tree safely
-	for num, val := range podObject.Status.InitContainerStatuses {
-		if num == len(podObject.Status.InitContainerStatuses)-1 {
+	for num, val := range pd.PodObject.Status.InitContainerStatuses {
+		if num == len(pd.PodObject.Status.InitContainerStatuses)-1 {
 			if val.RestartCount == 1 {
 				log.Info("               │       └─── %s [init, %d restart]", val.Name, val.RestartCount)
 			} else {
@@ -220,9 +270,9 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 	}
 
 	siblingsPods := []string{}
-	for _, val := range nodePods.Items {
+	for _, val := range pd.Node.Pods.Items {
 		// remove its own name from the node pods list
-		if val.GetName() != podObject.GetName() {
+		if val.GetName() != pd.PodObject.GetName() {
 			siblingsPods = append(siblingsPods, val.GetName())
 		}
 	}
@@ -252,7 +302,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 	log.Info("")
 
 	// basic reasons for pods not being in a running state
-	for _, containerStatuses := range podObject.Status.ContainerStatuses {
+	for _, containerStatuses := range pd.PodObject.Status.ContainerStatuses {
 		if containerStatuses.LastTerminationState.Waiting != nil {
 			log.Info("Stuck:")
 			log.Info("    %s %s [code %s]",
