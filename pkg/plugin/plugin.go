@@ -156,8 +156,8 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 	} else {
 		for _, existingOwnerRef := range pd.PodObject.GetOwnerReferences() {
 			ownerKind := strings.ToLower(existingOwnerRef.Kind)
-
-			if ownerKind == "replicaset" {
+			switch ownerKind {
+			case "replicaset":
 				log.Info("[type]       │ └─┬ %s [deployment]", ownerKind)
 
 				rsObject, err := pd.Clientset.AppsV1().ReplicaSets(
@@ -177,7 +177,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 						existingOwnerRef.Name,
 						rsObject.Status.Replicas)
 				}
-			} else if ownerKind == "statefulset" {
+			case "statefulset":
 				log.Info("[type]       │ └─┬ %s", ownerKind)
 
 				ssObject, err := pd.Clientset.AppsV1().StatefulSets(
@@ -196,7 +196,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 						existingOwnerRef.Name,
 						ssObject.Status.Replicas)
 				}
-			} else if ownerKind == "daemonset" {
+			case "daemonset":
 				log.Info("[type]       │ └─┬ %s", ownerKind)
 
 				dsObject, err := pd.Clientset.AppsV1().DaemonSets(
@@ -215,7 +215,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 						existingOwnerRef.Name,
 						dsObject.Status.DesiredNumberScheduled)
 				}
-			} else {
+			default:
 				log.Info("[type]       │ └─┬ %s", ownerKind)
 				log.Info("[workload]   │   └─┬ %s [? replicas]", existingOwnerRef.Name)
 			}
