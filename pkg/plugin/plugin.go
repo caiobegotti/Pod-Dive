@@ -146,6 +146,8 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 			pd.Node.Condition)
 	}
 
+	// if namespace is not passed as a flag and there are multiple pods with the same
+	// name in separate namespaces, the default namespace will probably show up here
 	log.Info("[namespace]  ├─┬ %s", pd.PodObject.Namespace)
 
 	if pd.PodObject.GetOwnerReferences() == nil {
@@ -163,8 +165,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 					existingOwnerRef.Name,
 					metav1.GetOptions{})
 				if err != nil {
-					return errors.New(
-						"Failed to retrieve replica set data, AppsV1 API was not available.")
+					return errors.New("Failed to retrieve replica set data, AppsV1 API was not available.")
 				}
 
 				if rsObject.Status.Replicas == 1 {
@@ -184,8 +185,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 					existingOwnerRef.Name,
 					metav1.GetOptions{})
 				if err != nil {
-					return errors.New(
-						"Failed to retrieve stateful set data, AppsV1 API was not available.")
+					return errors.New("Failed to retrieve stateful set data, AppsV1 API was not available.")
 				}
 				if ssObject.Status.Replicas == 1 {
 					log.Info("[workload]   │   └─┬ %s [%d replica]",
@@ -204,8 +204,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 					existingOwnerRef.Name,
 					metav1.GetOptions{})
 				if err != nil {
-					return errors.New(
-						"Failed to retrieve daemon set data, AppsV1 API was not available.")
+					return errors.New("Failed to retrieve daemon set data, AppsV1 API was not available.")
 				}
 				if dsObject.Status.DesiredNumberScheduled == 1 {
 					log.Info("[workload]   │   └─┬ %s [%d replica]",
