@@ -14,8 +14,6 @@ import (
 
 // TODO
 // test node not ready
-// test multiple states (fluent-bit-rj8cn)
-// test pod with and without terminations
 
 type NodeInfo struct {
 	Object    *v1.Node
