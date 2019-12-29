@@ -47,43 +47,42 @@ $ kubectl pod-dive elasticsearch-curator-1576112400-97htk -n logging
 
 ```
 $ kubectl pod-dive kafka-operator-kafka-0
-Diving after pod kafka-operator-kafka-0:
-
 [node]      gke-staging-default-pool-acca72c6-klsn [ready]
-[namespace]    ├─┬─ kafka
-[type]         │ └─┬─ statefulset
-[workload]     │   └─┬─ kafka-operator-kafka [3 replicas]
-[pod]          │     └─┬─ kafka-operator-kafka-0 [pending]
-[containers]   │       ├─── kafka [1 restart]
-               │       ├─── tls-sidecar [0 restarts]
-               │       ├─── vault-renewer [2 restarts]
-               │       ├─── vault-authenticator [init, 0 restarts]
-               │       └─── kafka-init [init, 0 restarts]
-[siblings]     ├─── cassandra-0
-               ├─── debug-b58f6f7f8-hbfw5
-               ├─── ignite-memory-web-agent-cc75c9987-nfh6p
-               ├─── jaeger-agent-daemonset-gmhm7
-               ├─── jaeger-query-7dc45cfc9f-mzfg6
-               ├─── kafka-operator-zookeeper-0
-               ├─── calico-node-dgvht
-               ├─── calico-typha-65bfd5544b-kjjjh
-               ├─── fluentd-gcp-scaler-6bc97c54b4-xftsm
-               ├─── fluentd-gcp-v3.1.1-b9zhf
-               ├─── ip-masq-agent-jtjxz
-               ├─── kube-dns-autoscaler-bb58c6784-j9n4h
-               ├─── kube-proxy-gke-staging-default-pool-acca72c6-klsn
-               ├─── metrics-server-v0.3.1-7b4d7f457-v6mfp
-               ├─── prometheus-to-sd-47n9b
-               ├─── vpa-recommender-8667dc8d75-9j4vl
-               ├─── fluent-bit-rj8cn
-               ├─── prometheus-operator-grafana-7f478cc944-g7rvw
-               ├─── prometheus-operator-kube-state-metrics-79486d7f6d-9r9q5
-               ├─── prometheus-operator-operator-777f86b5f7-njr9n
-               └─── prometheus-operator-prometheus-node-exporter-8w8tv
+[namespace]  ├─┬ kafka
+[type]       │ └─┬ statefulset
+[workload]   │   └─┬ kafka-operator-kafka [3 replicas]
+[pod]        │     └─┬ kafka-operator-kafka-0 [pending]
+[containers] │       ├── kafka [1 restart]
+             │       ├── tls-sidecar [0 restarts]
+             │       ├── vault-renewer [2 restarts]
+             │       ├── vault-authenticator [init, 0 restarts]
+             │       └── kafka-init [init, 0 restarts]
+            ...
+[siblings]   ├── cassandra-0
+             ├── debug-b58f6f7f8-hbfw5
+             ├── ignite-memory-web-agent-cc75c9987-nfh6p
+             ├── jaeger-agent-daemonset-gmhm7
+             ├── jaeger-query-7dc45cfc9f-mzfg6
+             ├── kafka-operator-zookeeper-0
+             ├── calico-node-dgvht
+             ├── calico-typha-65bfd5544b-kjjjh
+             ├── fluentd-gcp-scaler-6bc97c54b4-xftsm
+             ├── fluentd-gcp-v3.1.1-b9zhf
+             ├── ip-masq-agent-jtjxz
+             ├── kube-dns-autoscaler-bb58c6784-j9n4h
+             ├── kube-proxy-gke-staging-default-pool-acca72c6-klsn
+             ├── metrics-server-v0.3.1-7b4d7f457-v6mfp
+             ├── prometheus-to-sd-47n9b
+             ├── vpa-recommender-8667dc8d75-9j4vl
+             ├── fluent-bit-rj8cn
+             ├── prometheus-operator-grafana-7f478cc944-g7rvw
+             ├── prometheus-operator-kube-state-metrics-79486d7f6d-9r9q5
+             ├── prometheus-operator-operator-777f86b5f7-njr9n
+             └── prometheus-operator-prometheus-node-exporter-8w8tv
 
-Stuck:
+WAITING:
     kafka imagepullbackoff
-Terminations:
+TERMINATION:
     vault-renewer error [code 7]
 ```
 
