@@ -89,8 +89,4 @@ Terminations:
 
 ## TODOs
 
-- namespaces via command flag to make it even faster
-- cleanup template command flags that are optional
-- some degree of info about replicasets
-- reduce binaries size
 - tests?
