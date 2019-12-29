@@ -12,23 +12,10 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-// TESTS
-//
-// krew flags
-// namespace
-// no pod name
-// non existent pod name
-// node not ready
-// pod from a job
-// pod from sts
-// pod from deploy
-// manual pod
-// bad chars in pod name (space, with quotes, escaping, @#$%=)
-// with and without init containers
-// containers with and without restarts
-// pod with and without terminations
-// kube-proxy-gke-staging-default-pool-acca72c6-klsn container
-// 2 pods with the same name, different namespace
+// TODO
+// test node not ready
+// test multiple states (fluent-bit-rj8cn)
+// test pod with and without terminations
 
 type NodeInfo struct {
 	Object    *v1.Node
@@ -47,12 +34,12 @@ type PodDivePlugin struct {
 func NewPodDivePlugin(configFlags *genericclioptions.ConfigFlags) (*PodDivePlugin, error) {
 	config, err := configFlags.ToRESTConfig()
 	if err != nil {
-		return nil, errors.Wrap(err, "Failed to read kubeconfig, exiting.")
+		return nil, errors.New("Failed to read kubeconfig, exiting.")
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return nil, errors.Wrap(err, "Failed to create API clientset")
+		return nil, errors.New("Failed to create API clientset")
 	}
 
 	return &PodDivePlugin{
@@ -61,24 +48,19 @@ func NewPodDivePlugin(configFlags *genericclioptions.ConfigFlags) (*PodDivePlugi
 	}, nil
 }
 
-func (pd *PodDivePlugin) findPodByPodName(name string) error {
+func (pd *PodDivePlugin) findPodByPodName(name string, namespace string) error {
 	podFieldSelector := "metadata.name=" + name
 
-	//log.Info("Namespace: %s", configFlags.Namespace)
-
-	// seek the whole cluster, in all namespaces, for the pod name
-	podFind, err := pd.Clientset.CoreV1().Pods("").List(metav1.ListOptions{FieldSelector: podFieldSelector})
+	// we will seek the whole cluster if namespace is not passed as a flag (it will be a "" string)
+	podFind, err := pd.Clientset.CoreV1().Pods(namespace).List(metav1.ListOptions{FieldSelector: podFieldSelector})
 	if err != nil || len(podFind.Items) == 0 {
-		return errors.Wrap(err, "Failed to list cluster pods, set a config context or verify the API server.")
+		return errors.New("Failed to get pod: check your parameters, set a context or verify API server.")
 	}
 
-	// we can save one API call here, making it much faster and smaller, hopefully
-	// podObject, err := clientset.CoreV1().Pods(podFind.Items[0].Namespace).Get(
-	// 	podFind.Items[0].Name, metav1.GetOptions{})
-	// if err != nil {
-	// 	return errors.Wrap(err, "Failed to get pod info")
-	// }
 	pd.PodObject = &podFind.Items[0]
+	if pd.PodObject.Spec.NodeName == "" || pd.PodObject == nil {
+		return errors.New("Pod is not assigned to a node yet, it's still pending scheduling probably.")
+	}
 
 	return nil
 }
@@ -87,7 +69,7 @@ func (pd *PodDivePlugin) findNodeByNodeName() error {
 	// basically to create the ascii tree of siblings below
 	nodeObject, err := pd.Clientset.CoreV1().Nodes().Get(pd.PodObject.Spec.NodeName, metav1.GetOptions{})
 	if err != nil {
-		return errors.Wrap(err, "Failed to get nodes info, verify the connection to their pool.")
+		return errors.New("Failed to get nodes info, verify the connection to their pool.")
 	}
 
 	pd.Node = &NodeInfo{
@@ -101,7 +83,7 @@ func (pd *PodDivePlugin) getNodeInfo() error {
 	nodeFieldSelector := "spec.nodeName=" + pd.Node.Object.Name
 	pods, err := pd.Clientset.CoreV1().Pods("").List(metav1.ListOptions{FieldSelector: nodeFieldSelector})
 	if err != nil {
-		return errors.Wrap(err, "Failed to get sibling pods info, API server could not be reached.")
+		return errors.New("Failed to get sibling pods info, API server could not be reached.")
 	}
 
 	pd.Node.Pods = pods
@@ -138,7 +120,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 
 	log := logger.NewLogger()
 
-	if err := pd.findPodByPodName(podName); err != nil {
+	if err := pd.findPodByPodName(podName, *configFlags.Namespace); err != nil {
 		return err
 	}
 
@@ -183,7 +165,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 					existingOwnerRef.Name,
 					metav1.GetOptions{})
 				if err != nil {
-					return errors.Wrap(err,
+					return errors.New(
 						"Failed to retrieve replica set data, AppsV1 API was not available.")
 				}
 
@@ -204,7 +186,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 					existingOwnerRef.Name,
 					metav1.GetOptions{})
 				if err != nil {
-					return errors.Wrap(err,
+					return errors.New(
 						"Failed to retrieve stateful set data, AppsV1 API was not available.")
 				}
 				if ssObject.Status.Replicas == 1 {
@@ -224,7 +206,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 					existingOwnerRef.Name,
 					metav1.GetOptions{})
 				if err != nil {
-					return errors.Wrap(err,
+					return errors.New(
 						"Failed to retrieve daemon set data, AppsV1 API was not available.")
 				}
 				if dsObject.Status.DesiredNumberScheduled == 1 {
@@ -351,20 +333,30 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 
 	// basic reasons for pods not being in a running state
 	for _, containerStatuses := range pd.PodObject.Status.ContainerStatuses {
-		if containerStatuses.LastTerminationState.Waiting != nil {
-			log.Info("STATUSES:")
-			log.Info("    %s %s [%s]",
-				containerStatuses.Name,
-				strings.ToLower(containerStatuses.LastTerminationState.Waiting.Reason),
-				containerStatuses.LastTerminationState.Waiting.Message)
+		if containerStatuses.LastTerminationState.Waiting != nil ||
+			containerStatuses.State.Waiting != nil {
+			log.Info("WAITING:")
 
+			if containerStatuses.LastTerminationState.Waiting != nil {
+				log.Info("    %s %s (%s)",
+					containerStatuses.Name,
+					strings.ToLower(containerStatuses.LastTerminationState.Waiting.Reason),
+					containerStatuses.LastTerminationState.Waiting.Message)
+			}
+
+			if containerStatuses.State.Waiting != nil {
+				log.Info("    %s %s (%s)",
+					containerStatuses.Name,
+					strings.ToLower(containerStatuses.State.Waiting.Reason),
+					containerStatuses.State.Waiting.Message)
+			}
 		}
 
 		if containerStatuses.LastTerminationState.Terminated != nil {
 			if containerStatuses.LastTerminationState.Terminated.Reason != "Completed" {
-				log.Info("TERMINATIONS:")
+				log.Info("TERMINATION:")
 
-				log.Info("    %s %s [code %d]",
+				log.Info("    %s %s (code %d)",
 					containerStatuses.Name,
 					strings.ToLower(containerStatuses.LastTerminationState.Terminated.Reason),
 					containerStatuses.LastTerminationState.Terminated.ExitCode)
