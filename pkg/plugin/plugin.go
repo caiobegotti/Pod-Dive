@@ -145,7 +145,7 @@ func RunPlugin(configFlags *genericclioptions.ConfigFlags, outputChan chan strin
 			pd.PodObject.Spec.NodeName,
 			pd.Node.Condition)
 	}
-	// FIXME: if ReplicaSet, go over it all again
+
 	log.Info("[namespace]  ├─┬ %s", pd.PodObject.Namespace)
 
 	if pd.PodObject.GetOwnerReferences() == nil {
