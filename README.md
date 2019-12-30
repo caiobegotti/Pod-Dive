@@ -83,9 +83,5 @@ $ kubectl pod-dive kafka-operator-kafka-0
 WAITING:
     kafka imagepullbackoff
 TERMINATION:
-    vault-renewer error [code 7]
+    vault-renewer error (code 7)
 ```
-
-## TODOs
-
-- tests?
