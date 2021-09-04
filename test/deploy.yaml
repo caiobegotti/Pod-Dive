@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-alpine
+  labels:
+    app: test-alpine
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-alpine
+  template:
+    metadata:
+      labels:
+        app: test-alpine
+    spec:
+      containers:
+      - name: test-alpine
+        image: alpine
+        command: ["sleep 30 && exit"]
+      restartPolicy: Always
+
