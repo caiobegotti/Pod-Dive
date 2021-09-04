@@ -136,6 +136,22 @@ compact: build
 release: compact ## build, compact, sha256 files for a release
 	@openssl sha256 out/*.tar.gz out/*.zip
 
+ifeq ($(OS),Windows_NT)
+    THIS_OS := Windows
+else
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+        THIS_OS += -D linux
+    endif
+    ifeq ($(UNAME_S),Darwin)
+        THIS_OS += darwin
+    endif
+endif
+
+.PHONE: install
+install: build
+	sudo cp -vaf out/pod-dive-amd64-$(THIS_OS) $(HOME)/.krew/bin/kubectl-pod_dive
+
 .PHONY: clean
 clean: ## clean up build directory and binaries files
 	$(RM) -r $(BUILDDIR) pod-dive
