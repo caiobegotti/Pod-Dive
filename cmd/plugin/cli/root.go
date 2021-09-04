@@ -19,7 +19,7 @@ var (
 func RootCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "pod-dive [pod name]",
-		Short: "Dives into a node after the desired pod info.",
+		Short: "Summary list of all pods with restarts and their last start time",
 		Long: `Dives into a node after the desired pod and returns data associated
 with the pod no matter where it is running, such as its origin workload,
 namespace, the node where it is running and its node pod siblings, as
