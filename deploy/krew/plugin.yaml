@@ -3,14 +3,14 @@ kind: Plugin
 metadata:
   name: pod-dive
 spec:
-  version: "v0.1.4"
+  version: "v0.1.5"
   platforms:
   - selector:
       matchLabels:
         os: linux
         arch: amd64
-    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.4/pod-dive-amd64-linux.tar.gz
-    sha256: "663d7f981b3c01dc13bfc2119b0abd0b5b20c85b4b755f6fec9e8cb8be34f343"
+    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.5/pod-dive-amd64-linux.tar.gz
+    sha256: "6ba0fb94abda46018a1409f7517868e135be44bbfa1ab76ebd0ce244954748f5"
     files:
     - from: "./LICENSE"
       to: "."
@@ -21,8 +21,8 @@ spec:
       matchLabels:
         os: darwin
         arch: amd64
-    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.4/pod-dive-amd64-darwin.tar.gz
-    sha256: "d314e57e5807afc4669c5a25852a733f1bc3140441bbd397b5666b22b5090617"
+    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.5/pod-dive-amd64-darwin.tar.gz
+    sha256: "cf0f3e6b630e334a366759e3549977f6c540650aaf7a22af376f41d3e345b564"
     files:
     - from: "./LICENSE"
       to: "."
@@ -31,10 +31,22 @@ spec:
     bin: "pod-dive-amd64-darwin"
   - selector:
       matchLabels:
+        os: darwin
+        arch: arm64
+    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.5/pod-dive-arm64-darwin.tar.gz
+    sha256: "e2ce0619e56acd353358910a76586b3eb7864775ce16966077d7a06edcea9f49"
+    files:
+    - from: "./LICENSE"
+      to: "."
+    - from: "./pod-dive-arm64-darwin"
+      to: "."
+    bin: "pod-dive-arm64-darwin"
+  - selector:
+      matchLabels:
         os: windows
         arch: amd64
-    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.4/pod-dive-amd64-windows.exe.zip
-    sha256: "199481b1a5caffe419cf7d2972f19043655ace20ca79394784636e98693b1540"
+    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.5/pod-dive-amd64-windows.exe.zip
+    sha256: "00d0a7f65b27e5d253d1f7be46730917583dc20ff27bd13c39e875f2e37e13b0"
     files:
     - from: "./LICENSE"
       to: "."
@@ -52,7 +64,7 @@ spec:
     The purpose is to have meaningful pod info at a glance without needing to
     run multiple kubectl commands to see what else is running next to your
     pod in a given node inside a huge cluster, because sometimes all
-    you've got from an alert is the pod name. 
+    you've got from an alert is the pod name.
 
     Usage
       $ kubectl pod-dive [pod name]
