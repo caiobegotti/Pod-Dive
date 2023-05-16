@@ -6,9 +6,15 @@ A `kubectl` [Krew](https://krew.dev) plugin to dive into your Kubernetes nodes p
 
 Icon art made by [Smashicons](https://www.flaticon.com/authors/smashicons) from [Flaticon](https://www.flaticon.com/). [We had one before Krew itself](https://github.com/kubernetes-sigs/krew/issues/437), go figure.
 
+
+## About this fork
+
+This repository is a fork of [caiobegotti/Pod-Dive](https://github.com/caiobegotti/Pod-Dive). It seems the original project is not being maintained for a while but I found this tool useful for some scenarios.
+Please, do not expect any kind of support for this forked repository.
+
 ## Quick Start
 
-If you don't use Krew to manage `kubectl` plugins [you can simply download the binary here](https://github.com/caiobegotti/Pod-Dive/releases) and put it in your PATH.
+If you don't use Krew to manage `kubectl` plugins [you can simply download the binary here](https://github.com/fsan/Pod-Dive/releases) and put it in your PATH.
 
 ```
 kubectl krew install pod-dive
