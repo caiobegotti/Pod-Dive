@@ -1,16 +1,19 @@
+# out/pod-dive-amd64-windows.exe
+# out/pod-dive-arm64-darwin
+
 apiVersion: krew.googlecontainertools.github.com/v1alpha2
 kind: Plugin
 metadata:
   name: pod-dive
 spec:
-  version: "v0.1.4"
+  version: "v0.1.6"
   platforms:
   - selector:
       matchLabels:
         os: linux
         arch: amd64
-    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.4/pod-dive-amd64-linux.tar.gz
-    sha256: "663d7f981b3c01dc13bfc2119b0abd0b5b20c85b4b755f6fec9e8cb8be34f343"
+    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.6/pod-dive-amd64-linux.tar.gz
+    sha256: "1b1b0c05a3e24315c13f97f20b33890e722bb0daa6efa5403826f3dd201a2d4b"
     files:
     - from: "./LICENSE"
       to: "."
@@ -20,9 +23,21 @@ spec:
   - selector:
       matchLabels:
         os: darwin
+        arch: arm64
+    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.6/pod-dive-arm64-darwin.tar.gz
+    sha256: "1cfae45695dc9489fa7ce4d938a84ee5ec75f72e3bf3717ab543cefed55d3a17"
+    files:
+    - from: "./LICENSE"
+      to: "."
+    - from: "./pod-dive-arm64-darwin"
+      to: "."
+    bin: "pod-dive-arm64-darwin"
+  - selector:
+      matchLabels:
+        os: darwin
         arch: amd64
-    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.4/pod-dive-amd64-darwin.tar.gz
-    sha256: "d314e57e5807afc4669c5a25852a733f1bc3140441bbd397b5666b22b5090617"
+    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.6/pod-dive-amd64-darwin.tar.gz
+    sha256: "89be29e4f29f84fb3e3258f8d7658261914ae6f5ae10c8862f3de83210a99bb6"
     files:
     - from: "./LICENSE"
       to: "."
@@ -33,8 +48,8 @@ spec:
       matchLabels:
         os: windows
         arch: amd64
-    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.4/pod-dive-amd64-windows.exe.zip
-    sha256: "199481b1a5caffe419cf7d2972f19043655ace20ca79394784636e98693b1540"
+    uri: https://github.com/caiobegotti/pod-dive/releases/download/v0.1.6/pod-dive-amd64-windows.exe.zip
+    sha256: "aab563338aa3ccfc3839218d7ce3c7689b0a48d515a1e30a52a101eecc3752a1"
     files:
     - from: "./LICENSE"
       to: "."

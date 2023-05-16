@@ -23,7 +23,7 @@ SHELL := bash
 .DEFAULT_GOAL := help
 
 export GO111MODULE ?= on
-export GOARCH      ?= amd64
+export GOARCH      ?= arm64
 export CGO_ENABLED ?= 0
 
 PROJECT   ?= pod-dive
@@ -34,7 +34,7 @@ GOOS      ?= $(shell go env GOOS)
 GOPATH    ?= $(shell go env GOPATH)
 
 BUILDDIR  := out
-PLATFORMS ?= darwin/amd64 windows/amd64 linux/amd64
+PLATFORMS ?= darwin/arm64 darwin/amd64 windows/amd64 linux/amd64
 DISTFILE  := $(BUILDDIR)/$(VERSION).tar.gz
 ASSETS     := $(BUILDDIR)/pod-dive-$(GOARCH)-darwin.tar.gz $(BUILDDIR)/pod-dive-$(GOARCH)-linux.tar.gz $(BUILDDIR)/pod-dive-$(GOARCH)-windows.zip
 CHECKSUMS  := $(patsubst %,%.sha256,$(ASSETS))
@@ -128,6 +128,7 @@ dist: $(DISTFILE) ## create a tar archive of the source code
 compact: build
 	@cp LICENSE $(BUILDDIR) && \
 	cd $(BUILDDIR) && \
+	tar cvvfz pod-dive-arm64-darwin.tar.gz pod-dive-arm64-darwin LICENSE && \
 	tar cvvfz pod-dive-amd64-darwin.tar.gz pod-dive-amd64-darwin LICENSE && \
 	tar cvvfz pod-dive-amd64-linux.tar.gz pod-dive-amd64-linux LICENSE && \
 	zip pod-dive-amd64-windows.exe.zip pod-dive-amd64-windows.exe LICENSE
@@ -150,7 +151,9 @@ endif
 
 .PHONE: install
 install: build
-	sudo cp -vaf out/pod-dive-amd64-$(THIS_OS) $(HOME)/.krew/bin/kubectl-pod_dive
+	mkdir -p $(HOME)/.krew/store/pod-dive/$(VERSION) && \
+	cp -va out/pod-dive-$(GOARCH)-$(THIS_OS) $(HOME)/.krew/store/pod-dive/$(VERSION)/kubectl-pod_dive && \
+	ln -s $(HOME)/.krew/store/pod-dive/$(VERSION)/kubectl-pod_dive $(HOME)/.krew/bin/kubectl-pod_dive
 
 .PHONY: clean
 clean: ## clean up build directory and binaries files
@@ -158,4 +161,5 @@ clean: ## clean up build directory and binaries files
 
 $(BUILDDIR)/pod-dive-amd64-linux: build
 $(BUILDDIR)/pod-dive-amd64-darwin: build
+$(BUILDDIR)/pod-dive-arm64-darwin: build
 $(BUILDDIR)/pod-dive-amd64-windows.exe: build
