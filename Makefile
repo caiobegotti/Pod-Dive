@@ -24,6 +24,7 @@ SHELL := bash
 
 export GO111MODULE ?= on
 export GOARCH      ?= amd64
+#export GOARCH      ?= arm64
 export CGO_ENABLED ?= 0
 
 PROJECT   ?= pod-dive
@@ -34,7 +35,8 @@ GOOS      ?= $(shell go env GOOS)
 GOPATH    ?= $(shell go env GOPATH)
 
 BUILDDIR  := out
-PLATFORMS ?= darwin/amd64 windows/amd64 linux/amd64
+PLATFORMS ?= darwin/arm64 darwin/amd64 windows/amd64 linux/amd64
+#PLATFORMS ?= darwin/arm64
 DISTFILE  := $(BUILDDIR)/$(VERSION).tar.gz
 ASSETS     := $(BUILDDIR)/pod-dive-$(GOARCH)-darwin.tar.gz $(BUILDDIR)/pod-dive-$(GOARCH)-linux.tar.gz $(BUILDDIR)/pod-dive-$(GOARCH)-windows.zip
 CHECKSUMS  := $(patsubst %,%.sha256,$(ASSETS))
@@ -156,6 +158,6 @@ install: build
 clean: ## clean up build directory and binaries files
 	$(RM) -r $(BUILDDIR) pod-dive
 
-$(BUILDDIR)/pod-dive-amd64-linux: build
+#$(BUILDDIR)/pod-dive-amd64-linux: build
 $(BUILDDIR)/pod-dive-amd64-darwin: build
-$(BUILDDIR)/pod-dive-amd64-windows.exe: build
+#$(BUILDDIR)/pod-dive-amd64-windows.exe: build
